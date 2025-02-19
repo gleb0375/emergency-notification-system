@@ -1,0 +1,11 @@
+﻿api-gateway/.mvn/wrapper/maven-wrapper.properties
+api-gateway/mvnw.cmd
+api-gateway/mvnw
+api-gateway/.gitattributes
+api-gateway/.gitignore
+api-user-service/.gitattributes
+api-user-service/.gitignore
+api-user-service/mvnw
+api-user-service/mvnw.cmd
+api-user-service/log
+api-user-service/.mvn
