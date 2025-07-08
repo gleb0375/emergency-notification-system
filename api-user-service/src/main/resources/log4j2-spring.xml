@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+
+    <Properties>
+        <Property name="consoleLevel">${bundle:application:console.level}</Property>
+        <Property name="logDir">log</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <ThresholdFilter level="${consoleLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+
+        <RollingFile name="FileImportFile" fileName="${logDir}/file_import.log" filePattern="${logDir}/file_import-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="MessageTemplateFile" fileName="${logDir}/message_template.log" filePattern="${logDir}/message_template-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="GeneralFile" fileName="${logDir}/application.log" filePattern="${logDir}/application-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="ConfigFile" fileName="${logDir}/auth.log" filePattern="${logDir}/auth-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.hhnatsiuk.apiuserservice.file_import" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="FileImportFile"/>
+            <AppenderRef ref="GeneralFile"/>
+        </Logger>
+        <Logger name="com.hhnatsiuk.apiuserservice.message_template" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="MessageTemplateFile"/>
+            <AppenderRef ref="GeneralFile"/>
+        </Logger>
+        <Logger name="com.hhnatsiuk.apiuserservice.config" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ConfigFile"/>
+            <AppenderRef ref="GeneralFile"/>
+        </Logger>
+
+        <Root level="debug">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="GeneralFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+
+    <Properties>
+        <Property name="consoleLevel">${bundle:application:console.level}</Property>
+        <Property name="logDir">log</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <ThresholdFilter level="${consoleLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+
+        <RollingFile name="AuthFile"
+                     fileName="${logDir}/auth.log"
+                     filePattern="${logDir}/auth-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="RegistrationFile" fileName="${logDir}/registration.log" filePattern="${logDir}/registration-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="ConfigFile" fileName="${logDir}/auth.log" filePattern="${logDir}/auth-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.hhnatsiuk.apiauthservice.auth" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="AuthFile"/>
+            <AppenderRef ref="GeneralFile"/>
+        </Logger>
+        <Logger name="com.hhnatsiuk.apiauthservice.registration" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RegistrationFile"/>
+            <AppenderRef ref="GeneralFile"/>
+        </Logger>
+        <Logger name="com.hhnatsiuk.apiauthservice.config" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ConfigFile"/>
+            <AppenderRef ref="GeneralFile"/>
+        </Logger>
+
+        <Root level="debug">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="GeneralFile"/>
+        </Root>
+    </Loggers>
+</Configuration>
