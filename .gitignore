@@ -9,3 +9,9 @@ api-user-service/mvnw
 api-user-service/mvnw.cmd
 api-user-service/log
 api-user-service/.mvn
+api-auth-service/.gitattributes
+api-auth-service/.mvn
+api-auth-service/.gitignore
+api-auth-service/mvnw
+api-auth-service/mvnw.cmd
+api-auth-service/log
