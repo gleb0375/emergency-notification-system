@@ -12,16 +12,6 @@
             <ThresholdFilter level="${consoleLevel}" onMatch="ACCEPT" onMismatch="DENY"/>
         </Console>
 
-        <RollingFile name="AuthFile"
-                     fileName="${logDir}/auth.log"
-                     filePattern="${logDir}/auth-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy size="10 MB"/>
-            </Policies>
-        </RollingFile>
-
         <RollingFile name="FileImportFile" fileName="${logDir}/file_import.log" filePattern="${logDir}/file_import-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
             <Policies>
@@ -31,14 +21,6 @@
         </RollingFile>
 
         <RollingFile name="MessageTemplateFile" fileName="${logDir}/message_template.log" filePattern="${logDir}/message_template-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy/>
-                <SizeBasedTriggeringPolicy size="10 MB"/>
-            </Policies>
-        </RollingFile>
-
-        <RollingFile name="RegistrationFile" fileName="${logDir}/registration.log" filePattern="${logDir}/registration-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
@@ -64,11 +46,6 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="com.hhnatsiuk.apiuserservice.auth" level="debug" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="AuthFile"/>
-            <AppenderRef ref="GeneralFile"/>
-        </Logger>
         <Logger name="com.hhnatsiuk.apiuserservice.file_import" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="FileImportFile"/>
@@ -77,11 +54,6 @@
         <Logger name="com.hhnatsiuk.apiuserservice.message_template" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="MessageTemplateFile"/>
-            <AppenderRef ref="GeneralFile"/>
-        </Logger>
-        <Logger name="com.hhnatsiuk.apiuserservice.registration" level="debug" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="RegistrationFile"/>
             <AppenderRef ref="GeneralFile"/>
         </Logger>
         <Logger name="com.hhnatsiuk.apiuserservice.config" level="debug" additivity="false">
