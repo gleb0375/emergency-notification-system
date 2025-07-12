@@ -1,0 +1,6 @@
+CREATE DATABASE IF NOT EXISTS auth_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS contact_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+GRANT ALL PRIVILEGES ON auth_db.* TO 'hhnatsiuk'@'%';
+GRANT ALL PRIVILEGES ON contact_db.* TO 'hhnatsiuk'@'%';
+FLUSH PRIVILEGES;
