@@ -1,4 +1,4 @@
-package com.hhnatsiuk.apiauthservice;
+package com.hhnatsiuk.api_auth_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

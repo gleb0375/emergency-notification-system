@@ -15,3 +15,8 @@ api-auth-service/.gitignore
 api-auth-service/mvnw
 api-auth-service/mvnw.cmd
 api-auth-service/log
+api-auth/.idea
+api-auth/api-auth-adapter-db/target
+api-auth/api-auth-if/target
+api-auth/api-auth-service/log
+api-auth/api-auth-service/target

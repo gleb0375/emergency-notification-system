@@ -1,4 +1,4 @@
-package com.hhnatsiuk.apiauthservice;
+package com.hhnatsiuk.api_auth_service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +13,7 @@ public class ApiAuthServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(ApiAuthServiceApplication.class, args);
         logger.info("Application context of Auth Service initialization completed.");
+
     }
 
 }
