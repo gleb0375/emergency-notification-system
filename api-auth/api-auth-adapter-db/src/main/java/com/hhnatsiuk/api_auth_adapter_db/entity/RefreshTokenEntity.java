@@ -2,18 +2,22 @@ package com.hhnatsiuk.api_auth_adapter_db.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "refresh_tokens")
-@Getter @Setter @NoArgsConstructor
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RefreshTokenEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "credentials_id", nullable = false)
-    private Long credentialsId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "credentials_id", nullable = false)
+    private CredentialEntity credential;
 
     @Column(name = "refresh_token", nullable = false, unique = true, length = 255)
     private String refreshToken;
@@ -25,7 +29,7 @@ public class RefreshTokenEntity {
     private String ipAddress;
 
     @Column(name = "is_active", nullable = false)
-    private boolean active = true;
+    private boolean active;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -34,5 +38,16 @@ public class RefreshTokenEntity {
     private LocalDateTime expiresAt;
 
     @PrePersist
-    void onCreate() { createdAt = LocalDateTime.now(); }
+    void prePersist() {
+        createdAt = LocalDateTime.now();
+        if (!active) active = true;
+    }
+
+    // ———————————————— Business methods ————————————————
+    public void revoke() {
+        this.active = false;
+    }
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiresAt);
+    }
 }

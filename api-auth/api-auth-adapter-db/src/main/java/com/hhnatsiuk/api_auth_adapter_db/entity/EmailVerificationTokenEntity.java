@@ -2,18 +2,22 @@ package com.hhnatsiuk.api_auth_adapter_db.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "email_verification_tokens")
-@Getter @Setter @NoArgsConstructor
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class EmailVerificationTokenEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "credentials_id", nullable = false)
-    private Long credentialsId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "credentials_id", nullable = false)
+    private CredentialEntity credential;
 
     @Column(nullable = false, unique = true, length = 255)
     private String token;
@@ -25,5 +29,12 @@ public class EmailVerificationTokenEntity {
     private LocalDateTime createdAt;
 
     @PrePersist
-    void onCreate() { createdAt = LocalDateTime.now(); }
+    void prePersist() {
+        createdAt = LocalDateTime.now();
+    }
+
+    // ———————————————— Business method ————————————————
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiresAt);
+    }
 }
