@@ -1,7 +1,136 @@
-openapi: 3.0.3
+openapi: "3.0.3"
 info:
-  title: Auth API
-  version: '0.0.1'
-paths: {}
+  title: "API for Auth Service"
+  description: |
+    API description for Auth Service
+  version: "1.0"
+
+paths:
+  /signup:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user (signup)
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        '201':
+          description: Verification code sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+              examples:
+                codeSent:
+                  summary: First-time signup
+                  value:
+                    message: "Verification code sent to email. Please confirm."
+        '400':
+          description: Malformed request or missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missingFields:
+                  summary: Missing email or password
+                  value:
+                    code: 400
+                    message: "Missing required field: password."
+        '409':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                userExists:
+                  summary: Email already registered
+                  value:
+                    code: 409
+                    message: "User with this email already exists."
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+              examples:
+                invalidEmail:
+                  summary: Invalid email format
+                  value:
+                    code: 422
+                    message: "Validation failed."
+                    details:
+                      - field: "email"
+                        error: "Invalid email format."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                internalError:
+                  summary: Unexpected server error
+                  value:
+                    code: 500
+                    message: "Internal server error."
+
 components:
-  schemas: {}
+  schemas:
+    SignupRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    SignupResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Verification code sent to email. Please confirm."
+      required:
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: HTTP status code
+        message:
+          type: string
+          description: Human-readable error message
+      required:
+        - code
+        - message
+
+    ValidationErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          properties:
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  error:
+                    type: string
+              description: List of field-specific validation errors

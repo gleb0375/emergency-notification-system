@@ -57,7 +57,6 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <skip>true</skip>
                             <inputSpec>${project.basedir}/src/main/resources/api.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <generateModelTests>false</generateModelTests>
