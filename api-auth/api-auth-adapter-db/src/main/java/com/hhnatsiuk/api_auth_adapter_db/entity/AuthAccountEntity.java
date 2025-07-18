@@ -7,11 +7,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
-@Table(name = "credentials")
+@Table(name = "auth_accounts")
 @Getter
 @NoArgsConstructor
-public class CredentialEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class AuthAccountEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true, length = 255)
@@ -21,7 +23,7 @@ public class CredentialEntity {
     private String password;
 
     @Column(name = "is_email_verified", nullable = false)
-    private boolean emailVerified;
+    private boolean isEmailVerified;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
@@ -32,31 +34,31 @@ public class CredentialEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-
     // ———————————————— Associations ————————————————
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "credentials_id"),
+    @JoinTable(name = "account_roles",
+            joinColumns = @JoinColumn(name = "account_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles = new LinkedHashSet<>();
 
-    @OneToOne(mappedBy = "credential", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserEntity userProfile;
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserProfileEntity userProfile;
 
-    @OneToMany(mappedBy = "credential", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EmailVerificationTokenEntity> verificationTokens = new ArrayList<>();
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmailVerificationEntity> verificationTokens = new ArrayList<>();
 
-    @OneToMany(mappedBy = "credential", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RefreshTokenEntity> refreshTokens = new ArrayList<>();
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SessionEntity> sessions = new ArrayList<>();
 
-    // ———————————————— lifecycle callbacks ————————————————
+    // ———————————————— Lifecycle callbacks ————————————————
 
     @PrePersist
     void prePersist() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
+
     @PreUpdate
     void preUpdate() {
         updatedAt = LocalDateTime.now();
@@ -65,24 +67,25 @@ public class CredentialEntity {
     // ———————————————— Business methods ————————————————
 
     public void verifyEmail() {
-        this.emailVerified = true;
+        this.isEmailVerified = true;
     }
+
     public void recordLogin() {
         this.lastLoginAt = LocalDateTime.now();
     }
 
-    public void setUserProfile(UserEntity profile) {
-        profile.setCredential(this);
+    public void setUserProfile(UserProfileEntity profile) {
+        profile.setAccount(this);
         this.userProfile = profile;
     }
 
-    public void addVerificationToken(EmailVerificationTokenEntity token) {
-        token.setCredential(this);
+    public void addVerificationToken(EmailVerificationEntity token) {
+        token.setAccount(this);
         verificationTokens.add(token);
     }
 
-    public void addRefreshToken(RefreshTokenEntity token) {
-        token.setCredential(this);
-        refreshTokens.add(token);
+    public void addSession(SessionEntity token) {
+        token.setAccount(this);
+        sessions.add(token);
     }
 }

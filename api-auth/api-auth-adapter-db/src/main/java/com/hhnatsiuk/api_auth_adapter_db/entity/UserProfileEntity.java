@@ -6,18 +6,21 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
-@Getter @Setter
+@Table(name = "user_profiles")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UserProfileEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "credentials_id", nullable = false, unique = true)
-    private CredentialEntity credential;
+    @JoinColumn(name = "account_id", nullable = false, unique = true)
+    private AuthAccountEntity account;
 
     @Column(name = "telegram_username", length = 100)
     private String telegramUsername;
@@ -36,6 +39,7 @@ public class UserEntity {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
+
     @PreUpdate
     void preUpdate() {
         updatedAt = LocalDateTime.now();

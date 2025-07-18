@@ -1,13 +1,4 @@
-USE auth_db;
-
-CREATE TABLE IF NOT EXISTS roles (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  name VARCHAR(50) NOT NULL UNIQUE,
-  description VARCHAR(255),
-  PRIMARY KEY (id)
-);
-
-CREATE TABLE IF NOT EXISTS credentials (
+CREATE TABLE IF NOT EXISTS auth_accounts (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
@@ -18,38 +9,45 @@ CREATE TABLE IF NOT EXISTS credentials (
   PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS user_roles (
-  credentials_id INT UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS roles (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL UNIQUE,
+  description VARCHAR(255),
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS account_roles (
+  account_id INT UNSIGNED NOT NULL,
   role_id INT UNSIGNED NOT NULL,
-  PRIMARY KEY (credentials_id, role_id),
-  FOREIGN KEY (credentials_id) REFERENCES credentials(id) ON DELETE CASCADE,
+  PRIMARY KEY (account_id, role_id),
+  FOREIGN KEY (account_id) REFERENCES auth_accounts(id) ON DELETE CASCADE,
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS email_verification_tokens (
+CREATE TABLE IF NOT EXISTS email_verifications (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  credentials_id INT UNSIGNED NOT NULL,
+  account_id INT UNSIGNED NOT NULL,
   token VARCHAR(255) NOT NULL UNIQUE,
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  FOREIGN KEY (credentials_id) REFERENCES credentials(id) ON DELETE CASCADE
+  FOREIGN KEY (account_id) REFERENCES auth_accounts(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS user_profiles (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  credentials_id INT UNSIGNED NOT NULL UNIQUE,
+  account_id INT UNSIGNED NOT NULL UNIQUE,
   telegram_username VARCHAR(100),
   phone_number VARCHAR(20),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  FOREIGN KEY (credentials_id) REFERENCES credentials(id) ON DELETE CASCADE
+  FOREIGN KEY (account_id) REFERENCES auth_accounts(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS refresh_tokens (
+CREATE TABLE IF NOT EXISTS sessions (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  credentials_id INT UNSIGNED NOT NULL,
+  account_id INT UNSIGNED NOT NULL,
   refresh_token VARCHAR(255) NOT NULL UNIQUE,
   user_agent VARCHAR(255),
   ip_address VARCHAR(45),
@@ -57,5 +55,5 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   expires_at TIMESTAMP NOT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (credentials_id) REFERENCES credentials(id) ON DELETE CASCADE
+  FOREIGN KEY (account_id) REFERENCES auth_accounts(id) ON DELETE CASCADE
 );

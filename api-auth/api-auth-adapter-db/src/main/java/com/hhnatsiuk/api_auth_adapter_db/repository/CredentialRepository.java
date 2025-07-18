@@ -1,9 +1,9 @@
 package com.hhnatsiuk.api_auth_adapter_db.repository;
 
-import com.hhnatsiuk.api_auth_adapter_db.entity.CredentialEntity;
+import com.hhnatsiuk.api_auth_adapter_db.entity.AuthAccountEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
-public interface CredentialRepository extends JpaRepository<CredentialEntity, Long> {
-    Optional<CredentialEntity> findByEmail(String email);
+public interface CredentialRepository extends JpaRepository<AuthAccountEntity, Long> {
+    Optional<AuthAccountEntity> findByEmail(String email);
 }

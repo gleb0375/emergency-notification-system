@@ -6,18 +6,21 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "email_verification_tokens")
-@Getter @Setter
+@Table(name = "email_verifications")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EmailVerificationTokenEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class EmailVerificationEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "credentials_id", nullable = false)
-    private CredentialEntity credential;
+    @JoinColumn(name = "account_id", nullable = false)
+    private AuthAccountEntity account;
 
     @Column(nullable = false, unique = true, length = 255)
     private String token;

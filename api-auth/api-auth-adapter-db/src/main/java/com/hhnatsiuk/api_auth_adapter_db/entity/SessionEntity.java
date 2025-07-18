@@ -6,18 +6,21 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "refresh_tokens")
-@Getter @Setter
+@Table(name = "sessions")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RefreshTokenEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class SessionEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "credentials_id", nullable = false)
-    private CredentialEntity credential;
+    @JoinColumn(name = "account_id", nullable = false)
+    private AuthAccountEntity account;
 
     @Column(name = "refresh_token", nullable = false, unique = true, length = 255)
     private String refreshToken;
@@ -29,7 +32,7 @@ public class RefreshTokenEntity {
     private String ipAddress;
 
     @Column(name = "is_active", nullable = false)
-    private boolean active;
+    private boolean isActive;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -40,13 +43,14 @@ public class RefreshTokenEntity {
     @PrePersist
     void prePersist() {
         createdAt = LocalDateTime.now();
-        if (!active) active = true;
+        if (!isActive) isActive = true;
     }
 
     // ———————————————— Business methods ————————————————
     public void revoke() {
-        this.active = false;
+        this.isActive = false;
     }
+
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
     }
