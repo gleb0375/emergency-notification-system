@@ -1,90 +1,55 @@
 openapi: "3.0.3"
 info:
-  title: "API for Auth Service"
+  title: "Auth Service REST API"
   description: |
-    API description for Auth Service
+    Strict REST‑style API for authentication and account management.
   version: "1.0"
 
-paths:
-  /signup:
-    post:
-      tags:
-        - Auth
-      summary: Register a new user (signup)
-      operationId: signup
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SignupRequest"
-      responses:
-        '201':
-          description: Verification code sent
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SignupResponse"
-              examples:
-                codeSent:
-                  summary: First-time signup
-                  value:
-                    message: "Verification code sent to email. Please confirm."
-        '400':
-          description: Malformed request or missing required fields
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                missingFields:
-                  summary: Missing email or password
-                  value:
-                    code: 400
-                    message: "Missing required field: password."
-        '409':
-          description: User already exists
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                userExists:
-                  summary: Email already registered
-                  value:
-                    code: 409
-                    message: "User with this email already exists."
-        '422':
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
-              examples:
-                invalidEmail:
-                  summary: Invalid email format
-                  value:
-                    code: 422
-                    message: "Validation failed."
-                    details:
-                      - field: "email"
-                        error: "Invalid email format."
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                internalError:
-                  summary: Unexpected server error
-                  value:
-                    code: 500
-                    message: "Internal server error."
-
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  examples:
+    MissingFields:
+      summary: Missing required field
+      value:
+        code: 400
+        message: "Missing required field: email."
+    InvalidCredentials:
+      summary: Invalid email or password
+      value:
+        code: 401
+        message: "Invalid email or password."
+    AccountExists:
+      summary: Account already exists
+      value:
+        code: 409
+        message: "Account with this email already exists."
+    ValidationFailed:
+      summary: Validation failed
+      value:
+        code: 422
+        message: "Validation failed."
+        details:
+          - field: "email"
+            error: "Invalid email format."
+    InternalError:
+      summary: Unexpected server error
+      value:
+        code: 500
+        message: "Internal server error."
+    EmailNotVerified:
+      summary: Email not verified
+      value:
+        code: 403
+        message: "Email address has not been verified."
+
   schemas:
-    SignupRequest:
+    ## -------------------- ACCOUNT --------------------
+    AuthAccountCreateRequest:
       type: object
       properties:
         email:
@@ -92,36 +57,123 @@ components:
           format: email
         password:
           type: string
-      required:
-        - email
-        - password
+      required: [ email, password ]
 
-    SignupResponse:
+    VerificationResponse:
       type: object
       properties:
         message:
           type: string
-          example: "Verification code sent to email. Please confirm."
-      required:
-        - message
+        email:
+          type: string
+          format: email
+        expiresInMinutes:
+          type: integer
+          description: Minutes until verification code expires
+      required: [ message, email, expiresInMinutes ]
 
+    ## -------------------- EMAIL VERIFICATION --------------------
+    SendVerificationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required: [ email ]
+
+    ConfirmEmailRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        email:
+          type: string
+          format: email
+      required: [ code, email ]
+
+    ConfirmEmailResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [ message ]
+
+    ## -------------------- SESSION --------------------
+    SignInRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [ email, password ]
+
+    SignInResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: Lifetime of access token in seconds
+        tokenType:
+          type: string
+          example: Bearer
+      required: [ accessToken, refreshToken, expiresIn, tokenType ]
+
+    SessionRefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required: [ refreshToken ]
+
+    SessionRefreshResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: Lifetime of new access token in seconds
+        tokenType:
+          type: string
+          example: Bearer
+      required: [ accessToken, refreshToken, expiresIn, tokenType ]
+
+    LogoutRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required: [ refreshToken ]
+
+    LogoutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [ message ]
+
+    ## -------------------- COMMON ERROR SCHEMAS --------------------
     ErrorResponse:
       type: object
       properties:
         code:
           type: integer
           format: int32
-          description: HTTP status code
         message:
           type: string
-          description: Human-readable error message
-      required:
-        - code
-        - message
+      required: [ code, message ]
 
     ValidationErrorResponse:
       allOf:
-        - $ref: "#/components/schemas/ErrorResponse"
+        - $ref: '#/components/schemas/ErrorResponse'
         - type: object
           properties:
             details:
@@ -133,4 +185,365 @@ components:
                     type: string
                   error:
                     type: string
-              description: List of field-specific validation errors
+              description: List of validation errors
+
+paths:
+  ## -------------------- ACCOUNTS --------------------
+  /auth-accounts:
+    post:
+      tags: [ Accounts ]
+      summary: Register a new account (sign‑up)
+      operationId: registerAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthAccountCreateRequest'
+      responses:
+        '201':
+          description: Verification code sent to email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResponse'
+        '400':
+          description: Missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing:
+                  $ref: '#/components/examples/MissingFields'
+        '409':
+          description: Account already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                exists:
+                  $ref: '#/components/examples/AccountExists'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                validation:
+                  $ref: '#/components/examples/ValidationFailed'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  $ref: '#/components/examples/InternalError'
+
+  ## -------------------- EMAIL VERIFICATIONS --------------------
+  /email-verifications:
+    post:
+      tags: [ EmailVerification ]
+      summary: Send or resend verification code to email
+      operationId: sendVerificationCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendVerificationRequest'
+      responses:
+        '200':
+          description: Verification code sent / resent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResponse'
+        '400':
+          description: Missing email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing:
+                  $ref: '#/components/examples/MissingFields'
+        '404':
+          description: Email not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  $ref: '#/components/examples/AccountExists'   # Reuse 409 example semantics
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                validation:
+                  $ref: '#/components/examples/ValidationFailed'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  $ref: '#/components/examples/InternalError'
+
+  /email-verifications/{token}:
+    patch:
+      tags: [ EmailVerification ]
+      summary: Confirm email with verification code
+      operationId: confirmEmail
+      parameters:
+        - in: path
+          name: token
+          schema:
+            type: string
+          required: true
+          description: Verification code token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmEmailRequest'
+      responses:
+        '200':
+          description: Email successfully verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfirmEmailResponse'
+        '400':
+          description: Missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing:
+                  $ref: '#/components/examples/MissingFields'
+        '404':
+          description: Code not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  $ref: '#/components/examples/InvalidCredentials'
+        '410':
+          description: Code expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                expired:
+                  summary: Code expired
+                  value:
+                    code: 410
+                    message: "Verification code has expired."
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                validation:
+                  $ref: '#/components/examples/ValidationFailed'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
+                  $ref: '#/components/examples/InternalError'
+
+  ## -------------------- SESSIONS --------------------
+  /sessions:
+    post: # ── SIGN‑IN (create session)
+      tags: [ Sessions ]
+      summary: Create a new session (sign‑in)
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignInResponse'
+        '400':
+          description: Missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing:
+                  $ref: '#/components/examples/MissingFields'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid:
+                  $ref: '#/components/examples/InvalidCredentials'
+        '403':
+          description: Email not verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notVerified:
+                  $ref: '#/components/examples/EmailNotVerified'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                validation:
+                  $ref: '#/components/examples/ValidationFailed'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  $ref: '#/components/examples/InternalError'
+
+    delete: # ── LOGOUT (invalidate refresh token)
+      tags: [ Sessions ]
+      summary: Invalidate refresh token and logout
+      operationId: logout
+      security:
+        - bearerAuth: [ ]           # требует access‑токен
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'   # { refreshToken }
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+        '400':
+          description: Missing refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingToken:
+                  $ref: '#/components/examples/MissingFields'
+        '401':
+          description: Invalid or expired access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  $ref: '#/components/examples/InvalidCredentials'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  $ref: '#/components/examples/InternalError'
+
+  /sessions/{sessionUuid}: # ── REFRESH (update session)
+    patch:
+      tags: [ Sessions ]
+      summary: Refresh an existing session
+      operationId: refreshSession
+      parameters:
+        - in: path
+          name: sessionUuid
+          required: true
+          schema:
+            type: string
+          description: UUID of session to refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionRefreshRequest'  # { refreshToken }
+      responses:
+        '200':
+          description: Session successfully refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionRefreshResponse'
+        '400':
+          description: Bad request / missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing:
+                  $ref: '#/components/examples/MissingFields'
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid:
+                  $ref: '#/components/examples/InvalidCredentials'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  $ref: '#/components/examples/InvalidCredentials'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  $ref: '#/components/examples/InternalError'
