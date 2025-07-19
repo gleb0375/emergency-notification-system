@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_profiles")
@@ -17,6 +18,9 @@ public class UserProfileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "uuid", nullable = false, unique = true, updatable = false, length = 36)
+    private String uuid;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false, unique = true)
@@ -36,13 +40,9 @@ public class UserProfileEntity {
 
     @PrePersist
     void prePersist() {
+        this.uuid = UUID.randomUUID().toString();
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
-    }
-
-    @PreUpdate
-    void preUpdate() {
-        updatedAt = LocalDateTime.now();
     }
 
     // ———————————————— Business method ————————————————

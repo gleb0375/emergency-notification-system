@@ -16,6 +16,9 @@ public class AuthAccountEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "uuid", nullable = false, unique = true, updatable = false, length = 36)
+    private String uuid;
+
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
@@ -55,6 +58,7 @@ public class AuthAccountEntity {
 
     @PrePersist
     void prePersist() {
+        this.uuid = UUID.randomUUID().toString();
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }

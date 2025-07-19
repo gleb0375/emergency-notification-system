@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "sessions")
@@ -18,11 +19,14 @@ public class SessionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "uuid", nullable = false, unique = true, updatable = false, length = 36)
+    private String uuid;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     private AuthAccountEntity account;
 
-    @Column(name = "refresh_token", nullable = false, unique = true, length = 255)
+    @Column(name = "refresh_token_hash", nullable = false, unique = true, length = 255)
     private String refreshToken;
 
     @Column(name = "user_agent", length = 255)
@@ -42,6 +46,9 @@ public class SessionEntity {
 
     @PrePersist
     void prePersist() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID().toString();
+        }
         createdAt = LocalDateTime.now();
         if (!isActive) isActive = true;
     }

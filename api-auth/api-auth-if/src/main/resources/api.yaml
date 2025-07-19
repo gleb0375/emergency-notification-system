@@ -49,7 +49,7 @@ components:
 
   schemas:
     ## -------------------- ACCOUNT --------------------
-    AuthAccountCreateRequest:
+    AccountCreateRequest:
       type: object
       properties:
         email:
@@ -59,9 +59,13 @@ components:
           type: string
       required: [ email, password ]
 
-    VerificationResponse:
+    AccountCreateResponse:
       type: object
       properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Public identifier of the newly created account
         message:
           type: string
         email:
@@ -70,7 +74,34 @@ components:
         expiresInMinutes:
           type: integer
           description: Minutes until verification code expires
-      required: [ message, email, expiresInMinutes ]
+      required: [ uuid, message, email, expiresInMinutes ]
+
+    ## -------------------- USER MANAGEMENT (ADMIN) --------------------
+    UserRole:
+      type: string
+      enum: [ USER, ADMIN, SUPERADMIN ]
+      description: User role
+
+    UserResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        roles:
+          type: array
+          items: { $ref: '#/components/schemas/UserRole' }
+        verified: { type: boolean, description: Email verified flag }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [ id, email, roles, verified, createdAt ]
+
+    UserDeleteResponse:
+      type: object
+      properties:
+        message: { type: string, example: User successfully deleted }
+        id: { type: string, format: uuid }
+      required: [ message, id ]
+
 
     ## -------------------- EMAIL VERIFICATION --------------------
     SendVerificationRequest:
@@ -81,15 +112,29 @@ components:
           format: email
       required: [ email ]
 
-    ConfirmEmailRequest:
+    VerificationResponse:
       type: object
       properties:
-        code:
+        uuid:
+          type: string
+          format: uuid
+          description: Public ID of the resource (account or email‐verification)
+        message:
           type: string
         email:
           type: string
           format: email
-      required: [ code, email ]
+        expiresInMinutes:
+          type: integer
+      required: [ uuid, message, email, expiresInMinutes ]
+
+    ConfirmEmailRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required: [ email ]
 
     ConfirmEmailResponse:
       type: object
@@ -166,7 +211,6 @@ components:
       properties:
         code:
           type: integer
-          format: int32
         message:
           type: string
       required: [ code, message ]
@@ -189,7 +233,7 @@ components:
 
 paths:
   ## -------------------- ACCOUNTS --------------------
-  /auth-accounts:
+  /accounts:
     post:
       tags: [ Accounts ]
       summary: Register a new account (sign‑up)
@@ -199,14 +243,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthAccountCreateRequest'
+              $ref: '#/components/schemas/AccountCreateRequest'
       responses:
         '201':
-          description: Verification code sent to email
+          description: Account created; verification code sent to email
+          headers:
+            Location:
+              description: URL of created account
+              schema:
+                type: string
+                example: /auth-accounts/7f3b2e4a-1d2c-4f5a-8b9c-0d1e2f3a4b5c
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VerificationResponse'
+                $ref: '#/components/schemas/AccountCreateResponse'
+              examples:
+                accountCreated:
+                  value:
+                    uuid: "7f3b2e4a-1d2c-4f5a-8b9c-0d1e2f3a4b5c"
+                    message: "Verification code sent to email"
+                    email: "user@example.com"
+                    expiresInMinutes: 15
+
         '400':
           description: Missing fields
           content:
@@ -216,6 +274,7 @@ paths:
               examples:
                 missing:
                   $ref: '#/components/examples/MissingFields'
+
         '409':
           description: Account already exists
           content:
@@ -225,6 +284,7 @@ paths:
               examples:
                 exists:
                   $ref: '#/components/examples/AccountExists'
+
         '422':
           description: Validation failed
           content:
@@ -234,6 +294,7 @@ paths:
               examples:
                 validation:
                   $ref: '#/components/examples/ValidationFailed'
+
         '500':
           description: Internal server error
           content:
@@ -244,8 +305,163 @@ paths:
                 error:
                   $ref: '#/components/examples/InternalError'
 
+  ## -------------------------------------------------- USER MANAGEMENT (ADMIN)
+  /users/{userUuid}:
+    get:
+      tags: [ User ]
+      summary: Get user by UUID
+      description:
+        Returns user details. Access: ADMIN only
+      operationId: getUser
+      parameters:
+        - name: userUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - bearerAuth: [ ]
+      x-roles: [ ADMIN ]
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                success:
+                  value:
+                    id: "7d4a2c34-8d4f-4c3a-b8fb-1b3dcd7400aa"
+                    email: "admin@example.com"
+                    roles: [ "ADMIN" ]
+                    verified: true
+                    createdAt: "2025-07-19T20:15:32Z"
+                    updatedAt: "2025-07-19T20:15:32Z"
+
+        '400':
+          description: Invalid UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidUuid:
+                  value:
+                    code: 400
+                    message: "Malformed UUID string"
+
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Missing or invalid token
+                  value:
+                    code: 401
+                    message: "Missing or invalid authentication token."
+
+        '403':
+          description: Forbidden — ADMIN role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Admin role required
+                  value:
+                    code: 403
+                    message: "Access denied. ADMIN role required."
+
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "User not found"
+
+    delete:
+      tags: [ User ]
+      summary: Delete user by UUID
+      description:
+        Deletes user permanently. Access: ADMIN only
+      operationId: deleteUser
+      parameters:
+        - name: userUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - bearerAuth: [ ]
+      x-roles: [ ADMIN ]
+      responses:
+        '204':
+          description: User successfully deleted
+
+        '400':
+          description: Invalid UUID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidUuid:
+                  value:
+                    code: 400
+                    message: "Malformed UUID string"
+
+        '401':
+          description: Unauthorized — missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Missing or invalid token
+                  value:
+                    code: 401
+                    message: "Missing or invalid authentication token."
+
+        '403':
+          description: Forbidden — ADMIN role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Admin role required
+                  value:
+                    code: 403
+                    message: "Access denied. ADMIN role required."
+
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: 404
+                    message: "User not found"
+
   ## -------------------- EMAIL VERIFICATIONS --------------------
-  /email-verifications:
+  /verifications:
     post:
       tags: [ EmailVerification ]
       summary: Send or resend verification code to email
@@ -300,7 +516,7 @@ paths:
                 error:
                   $ref: '#/components/examples/InternalError'
 
-  /email-verifications/{token}:
+  /verifications/{token}:
     patch:
       tags: [ EmailVerification ]
       summary: Confirm email with verification code
@@ -311,7 +527,7 @@ paths:
           schema:
             type: string
           required: true
-          description: Verification code token
+          description: Verification code sent to email
       requestBody:
         required: true
         content:
@@ -326,7 +542,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ConfirmEmailResponse'
         '400':
-          description: Missing fields
+          description: Missing email
           content:
             application/json:
               schema:
@@ -374,9 +590,10 @@ paths:
                 internalError:
                   $ref: '#/components/examples/InternalError'
 
+
   ## -------------------- SESSIONS --------------------
   /sessions:
-    post: # ── SIGN‑IN (create session)
+    post:
       tags: [ Sessions ]
       summary: Create a new session (sign‑in)
       operationId: signIn
@@ -439,18 +656,22 @@ paths:
                 error:
                   $ref: '#/components/examples/InternalError'
 
-    delete: # ── LOGOUT (invalidate refresh token)
+  /sessions/{sessionUuid}:
+    delete:
       tags: [ Sessions ]
-      summary: Invalidate refresh token and logout
+      summary: Invalidate session and logout
+      description: Invalidate the session identified by sessionUuid
       operationId: logout
       security:
-        - bearerAuth: [ ]           # требует access‑токен
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LogoutRequest'   # { refreshToken }
+        - bearerAuth: [ ]
+      parameters:
+        - name: sessionUuid
+          in: path
+          required: true
+          description: UUID of the session to invalidate
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Logout successful
@@ -458,15 +679,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LogoutResponse'
-        '400':
-          description: Missing refresh token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                missingToken:
-                  $ref: '#/components/examples/MissingFields'
         '401':
           description: Invalid or expired access token
           content:
@@ -474,61 +686,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                unauthorized:
-                  $ref: '#/components/examples/InvalidCredentials'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                error:
-                  $ref: '#/components/examples/InternalError'
-
-  /sessions/{sessionUuid}: # ── REFRESH (update session)
-    patch:
-      tags: [ Sessions ]
-      summary: Refresh an existing session
-      operationId: refreshSession
-      parameters:
-        - in: path
-          name: sessionUuid
-          required: true
-          schema:
-            type: string
-          description: UUID of session to refresh
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SessionRefreshRequest'  # { refreshToken }
-      responses:
-        '200':
-          description: Session successfully refreshed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SessionRefreshResponse'
-        '400':
-          description: Bad request / missing token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                missing:
-                  $ref: '#/components/examples/MissingFields'
-        '401':
-          description: Invalid refresh token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                invalid:
-                  $ref: '#/components/examples/InvalidCredentials'
+                invalidToken:
+                  summary: Invalid or expired access token
+                  value:
+                    code: 401
+                    message: "Invalid or expired access token."
         '404':
           description: Session not found
           content:
@@ -537,7 +699,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 notFound:
-                  $ref: '#/components/examples/InvalidCredentials'
+                  summary: Session not found
+                  value:
+                    code: 404
+                    message: "Session not found."
         '500':
           description: Internal server error
           content:
@@ -545,5 +710,77 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
-                error:
+                internalError:
+                  $ref: '#/components/examples/InternalError'
+
+    patch:
+      tags: [ Sessions ]
+      summary: Refresh an existing session
+      description: Refresh the session identified by sessionUuid
+      operationId: refreshSession
+      parameters:
+        - name: sessionUuid
+          in: path
+          required: true
+          description: UUID of session to refresh
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionRefreshRequest'
+      responses:
+        '200':
+          description: Session successfully refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionRefreshResponse'
+        '400':
+          description: Missing or invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingToken:
+                  summary: Missing token
+                  value:
+                    code: 400
+                    message: "Missing required field: refreshToken"
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidToken:
+                  summary: Invalid refresh token
+                  value:
+                    code: 401
+                    message: "Invalid refresh token."
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  summary: Session not found
+                  value:
+                    code: 404
+                    message: "Session not found."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internalError:
                   $ref: '#/components/examples/InternalError'
