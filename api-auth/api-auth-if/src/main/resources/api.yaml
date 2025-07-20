@@ -68,6 +68,7 @@ components:
           description: Public identifier of the newly created account
         message:
           type: string
+          description: Human‑readable status message
         email:
           type: string
           format: email
@@ -75,6 +76,7 @@ components:
           type: integer
           description: Minutes until verification code expires
       required: [ uuid, message, email, expiresInMinutes ]
+
 
     ## -------------------- USER MANAGEMENT (ADMIN) --------------------
     UserRole:
@@ -311,7 +313,7 @@ paths:
       tags: [ User ]
       summary: Get user by UUID
       description:
-        Returns user details. Access: ADMIN only
+        Returns user details (for ADMIN)
       operationId: getUser
       parameters:
         - name: userUuid
@@ -394,7 +396,7 @@ paths:
       tags: [ User ]
       summary: Delete user by UUID
       description:
-        Deletes user permanently. Access: ADMIN only
+        Deletes user permanently (for ADMIN)
       operationId: deleteUser
       parameters:
         - name: userUuid

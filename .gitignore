@@ -21,3 +21,4 @@ api-auth/api-auth-if/target
 api-auth/api-auth-service/log
 api-auth/api-auth-service/target
 api-auth/api-auth-if/api-auth-if.iml
+api-auth/api-auth-core/target

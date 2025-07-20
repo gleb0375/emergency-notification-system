@@ -19,6 +19,7 @@
     <name>api-auth</name>
 
     <modules>
+        <module>api-auth-core</module>
         <module>api-auth-if</module>
         <module>api-auth-adapter-db</module>
         <module>api-auth-service</module>

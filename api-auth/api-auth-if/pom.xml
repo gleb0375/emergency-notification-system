@@ -57,7 +57,7 @@
 
         <dependency>
             <groupId>com.hhnatsiuk</groupId>
-            <artifactId>api-auth-adapter-db</artifactId>
+            <artifactId>api-auth-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
