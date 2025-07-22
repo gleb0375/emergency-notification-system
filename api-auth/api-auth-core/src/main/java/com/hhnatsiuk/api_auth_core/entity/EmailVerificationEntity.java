@@ -1,4 +1,5 @@
-package com.hhnatsiuk.api_auth_adapter_db.entity;
+package com.hhnatsiuk.api_auth_core.entity;
+
 
 import jakarta.persistence.*;
 import lombok.*;
