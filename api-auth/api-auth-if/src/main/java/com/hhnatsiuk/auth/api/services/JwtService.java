@@ -82,13 +82,4 @@ public interface JwtService {
      * @return List of role names
      */
     List<String> extractRoles(String token);
-
-    /**
-     * Extracts the permissions assigned to the user from the given token.
-     *
-     * @param token JWT token
-     * @return List of permission names
-     */
-    List<String> extractPermissions(String token);
-
 }

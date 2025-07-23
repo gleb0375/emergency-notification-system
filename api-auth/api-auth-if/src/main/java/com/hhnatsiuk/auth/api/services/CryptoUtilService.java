@@ -1,5 +1,7 @@
 package com.hhnatsiuk.auth.api.services;
 
+import javax.crypto.SecretKey;
+
 public interface CryptoUtilService {
 
     /**
@@ -15,14 +17,14 @@ public interface CryptoUtilService {
      *
      * @return the access token secret key
      */
-    String getAccessTokenSecretKey();
+    SecretKey getAccessTokenSecretKey();
 
     /**
      * Retrieves the refresh token secret key.
      *
      * @return the refresh token secret key
      */
-    String getRefreshTokenSecretKey();
+    SecretKey getRefreshTokenKey();
 
     /**
      * Retrieves the expiration time for access tokens in milliseconds.
