@@ -36,7 +36,6 @@ public class SecurityConfig {
     private final ExtendedUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
-
     public SecurityConfig(JwtService jwtService, ExtendedUserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;

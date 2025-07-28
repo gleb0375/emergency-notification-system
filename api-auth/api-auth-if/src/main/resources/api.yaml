@@ -232,6 +232,13 @@ components:
                   error:
                     type: string
               description: List of validation errors
+    ErrorDetail:
+      type: object
+      properties:
+        field:
+          type: string
+        error:
+          type: string
 
 paths:
   ## -------------------- ACCOUNTS --------------------
