@@ -6,8 +6,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AuthAccountRepository extends JpaRepository<AuthAccountEntity, Long>, JpaSpecificationExecutor<AuthAccountEntity> {
     List<AuthAccountEntity> findAuthAccountEntityByEmail(String email);
+    Optional<AuthAccountEntity> findByEmail(String email);
+    boolean existsByEmail(String email);
 }

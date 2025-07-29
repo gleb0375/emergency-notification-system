@@ -6,35 +6,58 @@ import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.UserResponseDTO;
 import com.hhnatsiuk.api_auth_service.exception.user.UserAlreadyExistsException;
-import com.hhnatsiuk.api_auth_service.validation.UserValidator;
 import com.hhnatsiuk.auth.api.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
+    private static final int VERIFICATION_TTL_MIN = 60;
     private final AuthAccountRepository authAccountRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
-    public UserServiceImpl(AuthAccountRepository authAccountRepository) {
+    public UserServiceImpl(AuthAccountRepository authAccountRepository, PasswordEncoder passwordEncoder) {
         this.authAccountRepository = authAccountRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public AccountCreateResponseDTO createUser(AccountCreateRequestDTO userCreateRequestDTO) {
-        logger.info("Starting user creation for email: {}", userCreateRequestDTO.getEmail());
-        logger.debug("User creation request details: {}", userCreateRequestDTO);
+    public AccountCreateResponseDTO createUser(AccountCreateRequestDTO dto) {
+        logger.info("Creating account for email={}", dto.getEmail());
 
-        return null;
+        String email = dto.getEmail().trim().toLowerCase();
+        if (authAccountRepository.existsByEmail(email)) {
+            logger.warn("Email already in use: {}", email);
+            throw new UserAlreadyExistsException(
+                    HttpStatus.CONFLICT.value(),
+                    "An account with this email already exists"
+            );
+        }
+
+        AuthAccountEntity acct = new AuthAccountEntity();
+        acct.setEmail(email);
+        acct.setPassword(passwordEncoder.encode(dto.getPassword()));
+        acct = authAccountRepository.save(acct);
+
+        // TODO: сгенерировать и сохранить токен верификации
+        // UUID token = UUID.randomUUID();
+        // verificationRepo.save(new EmailVerificationEntity(token.toString(), ..., acct));
+
+        return new AccountCreateResponseDTO()
+                .uuid(UUID.fromString(acct.getUuid()))
+                .email(acct.getEmail())
+                .expiresInMinutes(VERIFICATION_TTL_MIN)
+                .message("Account created; verification code sent to email");
     }
 
     @Override
@@ -55,27 +78,5 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthAccountEntity findUserByEmail(String email) {
         return null;
-    }
-
-
-    private void validateUserCreateRequest(AccountCreateResponseDTO userCreateRequestDTO) {
-        logger.info("Validating user creation request for email: {}", userCreateRequestDTO.getEmail());
-        logger.debug("User creation validation details: {}", userCreateRequestDTO);
-        //UserValidator.validateUserForm(userCreateRequestDTO);
-
-        validateUserAlreadyExist(userCreateRequestDTO);
-
-        //UserValidator.validatePassword(userCreateRequestDTO);
-    }
-
-    private void validateUserAlreadyExist(AccountCreateResponseDTO userCreateRequestDTO) {
-        logger.info("Checking if user already exists for email: {}", userCreateRequestDTO.getEmail());
-        List<AuthAccountEntity> usersByEmail = authAccountRepository.findAuthAccountEntityByEmail(userCreateRequestDTO.getEmail());
-        logger.debug("Users found by email: {}", usersByEmail);
-
-        if (usersByEmail != null && !usersByEmail.isEmpty()) {
-            logger.warn("User already exists with email: {}", userCreateRequestDTO.getEmail());
-            throw new UserAlreadyExistsException(HttpStatus.CONFLICT.value(), "User already exists!");
-        }
     }
 }

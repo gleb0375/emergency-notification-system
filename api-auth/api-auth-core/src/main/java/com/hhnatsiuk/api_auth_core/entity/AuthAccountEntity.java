@@ -9,6 +9,7 @@ import java.util.*;
 @Entity
 @Table(name = "auth_accounts")
 @Getter
+@Setter
 @NoArgsConstructor
 public class AuthAccountEntity {
 
