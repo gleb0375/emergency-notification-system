@@ -6,6 +6,7 @@ import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.UserResponseDTO;
 import com.hhnatsiuk.api_auth_service.exception.user.UserAlreadyExistsException;
+import com.hhnatsiuk.api_auth_service.validation.UserValidator;
 import com.hhnatsiuk.auth.api.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +33,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public AccountCreateResponseDTO createUser(AccountCreateRequestDTO dto) {
-        logger.info("Creating account for email={}", dto.getEmail());
+    public AccountCreateResponseDTO createUser(AccountCreateRequestDTO accountCreateRequest) {
+        logger.info("Creating account for email={}", accountCreateRequest.getEmail());
 
-        String email = dto.getEmail().trim().toLowerCase();
+        UserValidator.validateForCreate(accountCreateRequest, authAccountRepository);
+
+        String email = accountCreateRequest.getEmail().trim().toLowerCase();
         if (authAccountRepository.existsByEmail(email)) {
             logger.warn("Email already in use: {}", email);
             throw new UserAlreadyExistsException(
@@ -44,18 +47,18 @@ public class UserServiceImpl implements UserService {
             );
         }
 
-        AuthAccountEntity acct = new AuthAccountEntity();
-        acct.setEmail(email);
-        acct.setPassword(passwordEncoder.encode(dto.getPassword()));
-        acct = authAccountRepository.save(acct);
+        AuthAccountEntity authAccountEntity = new AuthAccountEntity();
+        authAccountEntity.setEmail(email);
+        authAccountEntity.setPassword(passwordEncoder.encode(accountCreateRequest.getPassword()));
+        authAccountEntity = authAccountRepository.save(authAccountEntity);
 
         // TODO: сгенерировать и сохранить токен верификации
         // UUID token = UUID.randomUUID();
-        // verificationRepo.save(new EmailVerificationEntity(token.toString(), ..., acct));
+        // verificationRepo.save(new EmailVerificationEntity(token.toString(), ..., authAccountEntity));
 
         return new AccountCreateResponseDTO()
-                .uuid(UUID.fromString(acct.getUuid()))
-                .email(acct.getEmail())
+                .uuid(UUID.fromString(authAccountEntity.getUuid()))
+                .email(authAccountEntity.getEmail())
                 .expiresInMinutes(VERIFICATION_TTL_MIN)
                 .message("Account created; verification code sent to email");
     }

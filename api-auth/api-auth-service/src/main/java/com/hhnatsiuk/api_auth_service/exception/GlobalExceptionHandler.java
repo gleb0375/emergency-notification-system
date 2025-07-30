@@ -1,7 +1,8 @@
 package com.hhnatsiuk.api_auth_service.exception;
 
+import com.hhnatsiuk.api_auth_if.model.generated.ErrorDetailDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.ErrorResponseDTO;
-import com.hhnatsiuk.api_auth_if.model.generated.ValidationErrorResponseAllOfDetailsDTO;
+//import com.hhnatsiuk.api_auth_if.model.generated.ValidationErrorResponseAllOfDetailsDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.ValidationErrorResponseDTO;
 import com.hhnatsiuk.api_auth_service.exception.global.ApiException;
 import com.hhnatsiuk.api_auth_service.exception.global.ValidationException;
@@ -21,10 +22,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponseDTO> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        List<ValidationErrorResponseAllOfDetailsDTO> details = ex.getBindingResult()
+        List<ErrorDetailDTO> details = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(fe -> new ValidationErrorResponseAllOfDetailsDTO()
+                .map(fe -> new ErrorDetailDTO()
                         .field(fe.getField())
                         .error(fe.getDefaultMessage())
                 )
@@ -80,11 +81,13 @@ public class GlobalExceptionHandler {
         if (status == null) {
             status = HttpStatus.UNPROCESSABLE_ENTITY;
         }
-        ValidationErrorResponseDTO dto = new ValidationErrorResponseDTO()
-                .code(status.value())
-                .message(ex.getMessage())
-                .details(ex.getDetails());
-        return new ResponseEntity<>(dto, status);
+
+        ValidationErrorResponseDTO errorResponse = new ValidationErrorResponseDTO();
+        errorResponse.setCode(status.value());
+        errorResponse.setMessage(ex.getMessage());
+        errorResponse.setDetails(ex.getDetails());
+
+        return new ResponseEntity<>(errorResponse, status);
     }
 
     @ExceptionHandler(Exception.class)

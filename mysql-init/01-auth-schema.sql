@@ -1,3 +1,5 @@
+USE auth_db;
+
 -- ---------- ACCOUNTS ----------
 CREATE TABLE IF NOT EXISTS auth_accounts (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,

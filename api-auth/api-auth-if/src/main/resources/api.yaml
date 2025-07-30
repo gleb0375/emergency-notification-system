@@ -225,13 +225,7 @@ components:
             details:
               type: array
               items:
-                type: object
-                properties:
-                  field:
-                    type: string
-                  error:
-                    type: string
-              description: List of validation errors
+                $ref: '#/components/schemas/ErrorDetail'
     ErrorDetail:
       type: object
       properties:
