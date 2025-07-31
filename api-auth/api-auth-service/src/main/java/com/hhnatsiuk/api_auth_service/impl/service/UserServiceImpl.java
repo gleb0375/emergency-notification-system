@@ -56,11 +56,16 @@ public class UserServiceImpl implements UserService {
         // UUID token = UUID.randomUUID();
         // verificationRepo.save(new EmailVerificationEntity(token.toString(), ..., authAccountEntity));
 
-        return new AccountCreateResponseDTO()
+        AccountCreateResponseDTO response = new AccountCreateResponseDTO()
                 .uuid(UUID.fromString(authAccountEntity.getUuid()))
                 .email(authAccountEntity.getEmail())
                 .expiresInMinutes(VERIFICATION_TTL_MIN)
                 .message("Account created; verification code sent to email");
+
+        logger.debug("Created AuthAccountEntity [id={}, uuid={}, email={}]",
+                authAccountEntity.getId(), authAccountEntity.getUuid(), authAccountEntity.getEmail());
+
+        return response;
     }
 
     @Override

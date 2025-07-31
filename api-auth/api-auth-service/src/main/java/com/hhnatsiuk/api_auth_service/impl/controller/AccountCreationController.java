@@ -11,23 +11,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class AccountsController implements AccountsApi {
+public class AccountCreationController implements AccountsApi {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccountsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccountCreationController.class);
 
     private final UserService userService;
 
-    public AccountsController(UserService userService) {
+    public AccountCreationController(UserService userService) {
         this.userService = userService;
     }
 
     @Override
     public ResponseEntity<AccountCreateResponseDTO> registerAccount(AccountCreateRequestDTO userCreateRequestDTO) {
         logger.info("Received registration request for email={}", userCreateRequestDTO.getEmail());
-        AccountCreateResponseDTO created = userService.createUser(userCreateRequestDTO);
+
+        AccountCreateResponseDTO accountCreated = userService.createUser(userCreateRequestDTO);
+
+        logger.info("Account successfully created: uuid={} email={}", accountCreated.getUuid(), accountCreated.getEmail());
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(created);
+                .body(accountCreated);
     }
 
 }

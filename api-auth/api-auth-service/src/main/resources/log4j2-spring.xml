@@ -39,6 +39,16 @@
         </RollingFile>
     </Appenders>
 
+    <RollingFile name="GeneralFile"
+                 fileName="${logDir}/general.log"
+                 filePattern="${logDir}/general-%d{yyyy-MM-dd}-%i.log.gz">
+        <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5p] [%c{1}:%L] - %m%n"/>
+        <Policies>
+            <TimeBasedTriggeringPolicy/>
+            <SizeBasedTriggeringPolicy size="10 MB"/>
+        </Policies>
+    </RollingFile>
+
     <Loggers>
         <Logger name="com.hhnatsiuk.apiauthservice.auth" level="debug" additivity="false">
             <AppenderRef ref="Console"/>
