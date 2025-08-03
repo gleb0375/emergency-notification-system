@@ -52,10 +52,6 @@ public class UserServiceImpl implements UserService {
         authAccountEntity.setPassword(passwordEncoder.encode(accountCreateRequest.getPassword()));
         authAccountEntity = authAccountRepository.save(authAccountEntity);
 
-        // TODO: сгенерировать и сохранить токен верификации
-        // UUID token = UUID.randomUUID();
-        // verificationRepo.save(new EmailVerificationEntity(token.toString(), ..., authAccountEntity));
-
         AccountCreateResponseDTO response = new AccountCreateResponseDTO()
                 .uuid(UUID.fromString(authAccountEntity.getUuid()))
                 .email(authAccountEntity.getEmail())

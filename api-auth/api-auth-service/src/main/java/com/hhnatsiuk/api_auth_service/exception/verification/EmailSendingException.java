@@ -1,4 +1,4 @@
-package com.hhnatsiuk.api_auth_service.exception.token;
+package com.hhnatsiuk.api_auth_service.exception.verification;
 
 import com.hhnatsiuk.api_auth_service.exception.global.ApiException;
 

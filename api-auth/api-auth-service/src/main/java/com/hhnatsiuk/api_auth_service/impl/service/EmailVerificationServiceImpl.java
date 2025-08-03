@@ -8,8 +8,10 @@ import com.hhnatsiuk.api_auth_if.model.generated.ConfirmEmailRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.ConfirmEmailResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SendVerificationRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.VerificationResponseDTO;
-import com.hhnatsiuk.api_auth_service.exception.token.EmailSendingException;
+import com.hhnatsiuk.api_auth_service.exception.verification.EmailSendingException;
 import com.hhnatsiuk.api_auth_service.exception.user.UserNotFoundException;
+import com.hhnatsiuk.api_auth_service.exception.verification.VerificationExpiredException;
+import com.hhnatsiuk.api_auth_service.exception.verification.VerificationNotFoundException;
 import com.hhnatsiuk.api_auth_service.util.OtpGenerator;
 import com.hhnatsiuk.auth.api.integration.AmazonSesClient;
 import com.hhnatsiuk.auth.api.services.EmailVerificationService;
@@ -83,7 +85,39 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     }
 
     @Override
-    public ConfirmEmailResponseDTO confirmEmail(ConfirmEmailRequestDTO request) {
-        return null;
+    public ConfirmEmailResponseDTO confirmEmail(String token, ConfirmEmailRequestDTO request) {
+        logger.info("Attempting to confirm email={} with token={}", request.getEmail(), token);
+
+        AuthAccountEntity account = authAccountRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UserNotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "User not found during confirmation email"
+                ));
+
+        EmailVerificationEntity latestVerificationEntity = emailVerificationRepository.findTopByAccountOrderByCreatedAtDesc(account)
+                .orElseThrow(() -> new VerificationNotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Verification entity not found"
+                ));
+
+        if (!latestVerificationEntity.getToken().equals(token)) {
+            logger.warn("Provided token does not match latest for {}", request.getEmail());
+            throw new VerificationNotFoundException(
+                    HttpStatus.NOT_FOUND.value(),
+                    "Verification code not found"
+            );
+        }
+
+        account.verifyEmail();
+        authAccountRepository.save(account);
+        logger.info("Email {} marked as verified", request.getEmail());
+
+        emailVerificationRepository.deleteAllByAccount(account);
+        logger.debug("All verification tokens for {} have been deleted", account.getUuid());
+
+        logger.info("Email confirmation successful for {}", request.getEmail());;
+
+        return new ConfirmEmailResponseDTO()
+                .message("Email successfully verified");
     }
 }

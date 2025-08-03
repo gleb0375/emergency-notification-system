@@ -34,7 +34,10 @@ public class AccountCreationController implements AccountsApi {
 
         SendVerificationRequestDTO verificationRequestDTO = new SendVerificationRequestDTO();
         verificationRequestDTO.setEmail(userCreateRequestDTO.getEmail());
-        emailVerificationService.sendVerificationCode(verificationRequestDTO);
+
+        VerificationResponseDTO verificationResponseDTO = emailVerificationService.sendVerificationCode(verificationRequestDTO);
+
+        logger.info("Verification code sent to {} (expires in {} minutes)", accountCreated.getEmail(), verificationResponseDTO.getExpiresInMinutes());
 
         logger.info("Account successfully created: uuid={} email={}", accountCreated.getUuid(), accountCreated.getEmail());
 

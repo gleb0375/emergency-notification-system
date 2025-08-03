@@ -9,6 +9,6 @@ public interface EmailVerificationService {
 
     VerificationResponseDTO sendVerificationCode(SendVerificationRequestDTO sendVerificationRequestDTO);
 
-    ConfirmEmailResponseDTO confirmEmail(ConfirmEmailRequestDTO request);
+    ConfirmEmailResponseDTO confirmEmail(String token, ConfirmEmailRequestDTO request);
 
 }
