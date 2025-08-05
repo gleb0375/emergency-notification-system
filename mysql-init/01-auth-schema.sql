@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 
 -- ---------- SESSIONS (refresh‑tokens) ----------
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE IF NOT EXISTS tokens (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   uuid CHAR(36) NOT NULL UNIQUE,
   account_id BIGINT UNSIGNED NOT NULL,

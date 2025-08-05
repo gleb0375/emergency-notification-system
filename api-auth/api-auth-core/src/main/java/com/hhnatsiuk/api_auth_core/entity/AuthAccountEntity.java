@@ -53,7 +53,7 @@ public class AuthAccountEntity {
     private List<EmailVerificationEntity> verificationTokens = new ArrayList<>();
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SessionEntity> sessions = new ArrayList<>();
+    private List<TokenEntity> sessions = new ArrayList<>();
 
     // ———————————————— Lifecycle callbacks ————————————————
 
@@ -89,7 +89,7 @@ public class AuthAccountEntity {
         verificationTokens.add(token);
     }
 
-    public void addSession(SessionEntity token) {
+    public void addSession(TokenEntity token) {
         token.setAccount(this);
         sessions.add(token);
     }
