@@ -1,9 +1,12 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
+import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
+import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateRequestDTO;
+import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionRefreshResponseDTO;
-import com.hhnatsiuk.api_auth_if.model.generated.SignInRequestDTO;
-import com.hhnatsiuk.api_auth_if.model.generated.SignInResponseDTO;
+import com.hhnatsiuk.auth.api.services.SessionCreationService;
 import com.hhnatsiuk.auth.api.services.SessionService;
+import com.hhnatsiuk.auth.api.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,24 +19,29 @@ public class SessionServiceImpl implements SessionService {
     private static final Logger logger = LoggerFactory.getLogger(SessionServiceImpl.class);
 
     private final AuthenticationManager authenticationManager;
+    private final SessionCreationService sessionCreationService;
+    private final UserService userService;
 
-    public SessionServiceImpl(AuthenticationManager authenticationManager) {
+    public SessionServiceImpl(AuthenticationManager authenticationManager, SessionCreationService sessionCreationService, UserService userService) {
         this.authenticationManager = authenticationManager;
+        this.sessionCreationService = sessionCreationService;
+        this.userService = userService;
     }
 
     @Override
-    public SignInResponseDTO createSession(SignInRequestDTO signInRequestDTO) {
-        logger.info("Creating session for login: {}", signInRequestDTO.getEmail());
+    public SessionCreateResponseDTO createSession(SessionCreateRequestDTO sessionCreateRequestDTO) {
+        logger.info("Creating session for login: {}", sessionCreateRequestDTO.getEmail());
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        signInRequestDTO.getEmail(),
-                        signInRequestDTO.getPassword()
+                        sessionCreateRequestDTO.getEmail(),
+                        sessionCreateRequestDTO.getPassword()
                 )
         );
 
-        //TODO continue
-        return null;
+        AuthAccountEntity user = userService.findUserByEmail(sessionCreateRequestDTO.getEmail());
+
+        return sessionCreationService.createSessionForUser(user);
     }
 
     @Override

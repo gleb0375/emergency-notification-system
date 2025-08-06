@@ -1,9 +1,9 @@
 package com.hhnatsiuk.auth.api.services;
 
 import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
-import com.hhnatsiuk.api_auth_if.model.generated.SignInResponseDTO;
+import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 
 public interface SessionCreationService {
 
-    SignInResponseDTO createSessionForUser(AuthAccountEntity user);
+    SessionCreateResponseDTO createSessionForUser(AuthAccountEntity user);
 }

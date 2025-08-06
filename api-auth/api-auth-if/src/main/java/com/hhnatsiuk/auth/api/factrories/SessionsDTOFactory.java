@@ -2,9 +2,11 @@ package com.hhnatsiuk.auth.api.factrories;
 
 import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
 import com.hhnatsiuk.api_auth_core.entity.TokenEntity;
+import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionRefreshResponseDTO;
-import com.hhnatsiuk.api_auth_if.model.generated.SignInResponseDTO;
 
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public interface SessionsDTOFactory {
@@ -18,16 +20,27 @@ public interface SessionsDTOFactory {
             LocalDateTime expiresAt
     );
 
-    SignInResponseDTO toSignInResponse(
-            TokenEntity session,
+    SessionCreateResponseDTO sessionCreateToSessionCreateResponseDTO(
+            String sessionUuid,
             String accessToken,
-            String refreshToken
+            String refreshToken,
+            String userUuid
     );
 
-    SessionRefreshResponseDTO toRefreshResponse(
-            TokenEntity session,
+    SessionRefreshResponseDTO createSessionToRefreshResponse(
+            String sessionUuid,
             String accessToken,
-            String refreshToken
+            String refreshToken,
+            String userUuid
     );
+
+
+    TokenEntity createTokenEntityWithUser(
+            String refreshTokenHash,
+            LocalDateTime createdAt,
+            LocalDateTime expiresAt,
+            AuthAccountEntity user);
+
+
 
 }

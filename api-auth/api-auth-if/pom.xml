@@ -7,7 +7,7 @@
         <groupId>com.hhnatsiuk</groupId>
         <artifactId>api-auth-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>api-auth-if</artifactId>

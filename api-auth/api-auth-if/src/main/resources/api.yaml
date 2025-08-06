@@ -146,7 +146,7 @@ components:
       required: [ message ]
 
     ## -------------------- SESSION --------------------
-    SignInRequest:
+    SessionCreateRequest:
       type: object
       properties:
         email:
@@ -156,20 +156,18 @@ components:
           type: string
       required: [ email, password ]
 
-    SignInResponse:
+    SessionCreateResponse:
       type: object
       properties:
+        sessionUuid:
+          type: string
         accessToken:
           type: string
         refreshToken:
           type: string
-        expiresIn:
-          type: integer
-          description: Lifetime of access token in seconds
-        tokenType:
+        userUuid:
           type: string
-          example: Bearer
-      required: [ accessToken, refreshToken, expiresIn, tokenType ]
+      required: [ sessionUuid, accessToken, refreshToken, userUuid ]
 
     SessionRefreshRequest:
       type: object
@@ -181,26 +179,24 @@ components:
     SessionRefreshResponse:
       type: object
       properties:
+        sessionUuid:
+          type: string
         accessToken:
           type: string
         refreshToken:
           type: string
-        expiresIn:
-          type: integer
-          description: Lifetime of new access token in seconds
-        tokenType:
+        userUuid:
           type: string
-          example: Bearer
-      required: [ accessToken, refreshToken, expiresIn, tokenType ]
+      required: [ sessionUuid, accessToken, refreshToken, userUuid ]
 
-    LogoutRequest:
+    SessionDeleteRequest:
       type: object
       properties:
         refreshToken:
           type: string
       required: [ refreshToken ]
 
-    LogoutResponse:
+    SessionDeleteResponse:
       type: object
       properties:
         message:
@@ -605,14 +601,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SignInRequest'
+              $ref: '#/components/schemas/SessionCreateRequest'
       responses:
         '200':
           description: Authentication successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SignInResponse'
+                $ref: '#/components/schemas/SessionCreateResponse'
         '400':
           description: Missing fields
           content:
@@ -681,7 +677,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LogoutResponse'
+                $ref: '#/components/schemas/SessionDeleteResponse'
         '401':
           description: Invalid or expired access token
           content:
