@@ -29,7 +29,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public SessionCreateResponseDTO createSession(SessionCreateRequestDTO sessionCreateRequestDTO) {
+    public SessionCreateResponseDTO createSession(SessionCreateRequestDTO sessionCreateRequestDTO, String userAgent, String ipAddress) {
         logger.info("Creating session for login: {}", sessionCreateRequestDTO.getEmail());
 
         authenticationManager.authenticate(
@@ -41,7 +41,8 @@ public class SessionServiceImpl implements SessionService {
 
         AuthAccountEntity user = userService.findUserByEmail(sessionCreateRequestDTO.getEmail());
 
-        return sessionCreationService.createSessionForUser(user);
+
+        return sessionCreationService.createSessionForUser(user, userAgent, ipAddress);
     }
 
     @Override

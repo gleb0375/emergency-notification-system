@@ -78,7 +78,7 @@ public class SessionsDTOFactoryImpl implements SessionsDTOFactory {
     }
 
     @Override
-    public TokenEntity createTokenEntityWithUser(String refreshTokenHash, LocalDateTime createdAt, LocalDateTime expiresAt, AuthAccountEntity user) {
+    public TokenEntity createTokenEntityWithUser(String refreshTokenHash, LocalDateTime createdAt, LocalDateTime expiresAt, AuthAccountEntity user, String userAgent, String ipAddress) {
         logger.info("Creating TokenEntity with user: {}", user.getId());
         try {
             TokenEntity tokenEntity = new TokenEntity();
@@ -86,6 +86,8 @@ public class SessionsDTOFactoryImpl implements SessionsDTOFactory {
             tokenEntity.setCreatedAt(createdAt);
             tokenEntity.setExpiresAt(expiresAt);
             tokenEntity.setAccount(user);
+            tokenEntity.setUserAgent(userAgent);
+            tokenEntity.setIpAddress(ipAddress);
 
             logger.info("TokenEntity created successfully for user: {}", user.getId());
             return tokenEntity;

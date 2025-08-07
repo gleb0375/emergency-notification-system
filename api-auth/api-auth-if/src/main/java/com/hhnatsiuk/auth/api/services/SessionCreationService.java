@@ -5,5 +5,5 @@ import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 
 public interface SessionCreationService {
 
-    SessionCreateResponseDTO createSessionForUser(AuthAccountEntity user);
+    SessionCreateResponseDTO createSessionForUser(AuthAccountEntity user, String userAgent, String ipAddress);
 }

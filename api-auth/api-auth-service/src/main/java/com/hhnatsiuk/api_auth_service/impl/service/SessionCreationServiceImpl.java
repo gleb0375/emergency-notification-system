@@ -38,28 +38,23 @@ public class SessionCreationServiceImpl implements SessionCreationService {
     }
 
     @Override
-    public SessionCreateResponseDTO createSessionForUser(AuthAccountEntity user) {
-        // 1. Берём текущий момент как LocalDateTime
+    public SessionCreateResponseDTO createSessionForUser(AuthAccountEntity user, String userAgent, String ipAddress) {
         LocalDateTime now = LocalDateTime.now();
 
-        // 2. Ищем действующую сессию (expiresAt — тоже LocalDateTime)
         Optional<TokenEntity> existingOpt = tokenRepository
                 .findFirstByAccount_IdAndExpiresAtAfterOrderByExpiresAtDesc(user.getId(), now);
 
-        // 3. Генерим токены
         String accessToken  = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
         String refreshHash  = cryptoUtilService.hashToken(refreshToken);
 
-        // 4. Обновляем или создаём новую запись
         TokenEntity tokenEntity = existingOpt
-                .map(existing -> updateExistingToken(existing, refreshHash, now))
-                .orElseGet(() -> createNewToken(refreshHash, now, user));
+                .map(existing -> updateExistingToken(existing, refreshHash, now, userAgent, ipAddress))
+                .orElseGet(() -> createNewToken(refreshHash, now, user, userAgent, ipAddress));
 
         logger.info("Session {} for user {} is active until {}",
                 tokenEntity.getUuid(), user.getUuid(), tokenEntity.getExpiresAt());
 
-        // 5. Формируем ответ
         return sessionsDTOFactory.sessionCreateToSessionCreateResponseDTO(
                 tokenEntity.getUuid(),
                 accessToken,
@@ -71,10 +66,12 @@ public class SessionCreationServiceImpl implements SessionCreationService {
 
     private TokenEntity createNewToken(String refreshTokenHash,
                                        LocalDateTime now,
-                                       AuthAccountEntity user) {
+                                       AuthAccountEntity user,
+                                       String userAgent,
+                                       String ipAddress
+    ) {
         logger.debug("Creating new token for user: {}", user.getId());
 
-        // рассчитываем expiresAt как now + TTL
         LocalDateTime expiresAt = now.plus(Duration.ofMillis(
                 cryptoUtilService.getRefreshTokenExpirationInMs()
         ));
@@ -83,7 +80,9 @@ public class SessionCreationServiceImpl implements SessionCreationService {
                 refreshTokenHash,
                 now,
                 expiresAt,
-                user
+                user,
+                userAgent,
+                ipAddress
         );
 
         try {
@@ -92,18 +91,22 @@ public class SessionCreationServiceImpl implements SessionCreationService {
             logger.error("Error occurred while saving new token for user: {}", user.getId(), e);
             throw new TokenEntitySaveException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "%#sessionsService.anUnexpectedErrorOccurredWhileSavingTheToken#%"
+                    "Unexpected error occurred while saving the token"
             );
         }
     }
 
     private TokenEntity updateExistingToken(TokenEntity existingToken,
                                             String refreshTokenHash,
-                                            LocalDateTime now) {
+                                            LocalDateTime now,
+                                            String userAgent,
+                                            String ipAddress) {
         logger.debug("Updating existing token with UUID: {}", existingToken.getUuid());
 
         existingToken.setRefreshToken(refreshTokenHash);
         existingToken.setCreatedAt(now);
+        existingToken.setUserAgent(userAgent);
+        existingToken.setIpAddress(ipAddress);
         existingToken.setExpiresAt(
                 now.plus(Duration.ofMillis(
                         cryptoUtilService.getRefreshTokenExpirationInMs()
@@ -116,7 +119,7 @@ public class SessionCreationServiceImpl implements SessionCreationService {
             logger.error("Error occurred while updating token with UUID: {}", existingToken.getUuid(), e);
             throw new TokenEntitySaveException(
                     HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "%#sessionsService.anUnexpectedErrorOccurredWhileUpdatingTheToken#%"
+                    "Unexpected error occurred while updating the token"
             );
         }
     }

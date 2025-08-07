@@ -6,7 +6,7 @@ import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 
 public interface SessionService {
 
-    SessionCreateResponseDTO createSession(SessionCreateRequestDTO sessionCreateRequestDTO);
+    SessionCreateResponseDTO createSession(SessionCreateRequestDTO sessionCreateRequestDTO, String userAgent, String ipAddress);
 
     SessionRefreshResponseDTO refreshSession(String sessionUuid, String rawRefreshToken);
 

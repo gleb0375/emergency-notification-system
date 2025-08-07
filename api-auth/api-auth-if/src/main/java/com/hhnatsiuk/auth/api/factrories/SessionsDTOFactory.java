@@ -39,7 +39,9 @@ public interface SessionsDTOFactory {
             String refreshTokenHash,
             LocalDateTime createdAt,
             LocalDateTime expiresAt,
-            AuthAccountEntity user);
+            AuthAccountEntity user,
+            String userAgent,
+            String ipAddress);
 
 
 

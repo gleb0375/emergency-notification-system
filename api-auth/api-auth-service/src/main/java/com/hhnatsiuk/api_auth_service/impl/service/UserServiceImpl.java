@@ -6,6 +6,7 @@ import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.UserResponseDTO;
 import com.hhnatsiuk.api_auth_service.exception.user.UserAlreadyExistsException;
+import com.hhnatsiuk.api_auth_service.exception.user.UserNotFoundException;
 import com.hhnatsiuk.api_auth_service.validation.UserValidator;
 import com.hhnatsiuk.auth.api.services.UserService;
 import org.slf4j.Logger;
@@ -81,6 +82,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AuthAccountEntity findUserByEmail(String email) {
-        return null;
+        logger.info("Finding user by email: {}", email);
+        String normalizedEmail = email.trim().toLowerCase();
+
+        return authAccountRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new UserNotFoundException(
+                        HttpStatus.NOT_FOUND.value(),
+                        String.format("User with email '%s' not found", normalizedEmail)
+                ));
     }
 }
