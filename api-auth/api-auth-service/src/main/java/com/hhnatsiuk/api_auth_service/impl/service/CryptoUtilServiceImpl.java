@@ -1,7 +1,7 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
 import com.hhnatsiuk.api_auth_service.config.JwtProperties;
-import com.hhnatsiuk.api_auth_service.exception.token.TokenHashingException;
+import com.hhnatsiuk.api_auth_service.exception.session.TokenHashingException;
 import com.hhnatsiuk.auth.api.services.CryptoUtilService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

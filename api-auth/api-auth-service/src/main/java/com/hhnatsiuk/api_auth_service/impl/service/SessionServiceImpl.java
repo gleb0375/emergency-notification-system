@@ -6,7 +6,10 @@ import com.hhnatsiuk.api_auth_core.entity.TokenEntity;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionRefreshResponseDTO;
-import com.hhnatsiuk.api_auth_service.exception.token.SessionNotFoundException;
+import com.hhnatsiuk.api_auth_service.exception.session.SessionAccessDeniedException;
+import com.hhnatsiuk.api_auth_service.exception.session.SessionNotFoundException;
+import com.hhnatsiuk.api_auth_service.exception.session.TokenEntityDeleteException;
+import com.hhnatsiuk.auth.api.services.CustomSecurityService;
 import com.hhnatsiuk.auth.api.services.SessionCreationService;
 import com.hhnatsiuk.auth.api.services.SessionService;
 import com.hhnatsiuk.auth.api.services.UserService;
@@ -26,12 +29,15 @@ public class SessionServiceImpl implements SessionService {
     private final SessionCreationService sessionCreationService;
     private final UserService userService;
     private final TokenRepository tokenRepository;
+    private final CustomSecurityService customSecurityService;
 
-    public SessionServiceImpl(AuthenticationManager authenticationManager, SessionCreationService sessionCreationService, UserService userService, TokenRepository tokenRepository) {
+    public SessionServiceImpl(AuthenticationManager authenticationManager, SessionCreationService sessionCreationService,
+                              UserService userService, TokenRepository tokenRepository, CustomSecurityService customSecurityService) {
         this.authenticationManager = authenticationManager;
         this.sessionCreationService = sessionCreationService;
         this.userService = userService;
         this.tokenRepository = tokenRepository;
+        this.customSecurityService = customSecurityService;
     }
 
     @Override
@@ -59,12 +65,21 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public void deleteSessionByUuid(String sessionUuid) {
         logger.info("Invalidating session {}", sessionUuid);
-        TokenEntity token = tokenRepository.findByUuid(sessionUuid)
+        TokenEntity tokenEntity = tokenRepository.findByUuid(sessionUuid)
                 .orElseThrow(() -> new SessionNotFoundException(
                         HttpStatus.NOT_FOUND.value(),
                         String.format("Session %s not found", sessionUuid)
                 ));
-        tokenRepository.delete(token);
+
+        if (!customSecurityService.hasRole("ADMIN") && !customSecurityService.isCurrentUser(tokenEntity.getAccount().getUuid())) {
+            throw new SessionAccessDeniedException(HttpStatus.FORBIDDEN.value(), "Forbidden to delete session");
+        }
+
+        try {
+            tokenRepository.delete(tokenEntity);
+        } catch (Exception e) {
+            throw new TokenEntityDeleteException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Some problems during deleting session");
+        }
         logger.info("Session {} invalidated", sessionUuid);
     }
 }

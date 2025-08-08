@@ -5,7 +5,7 @@ import com.hhnatsiuk.api_auth_adapter_db.repository.TokenRepository;
 import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
 import com.hhnatsiuk.api_auth_core.entity.TokenEntity;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
-import com.hhnatsiuk.api_auth_service.exception.token.TokenEntitySaveException;
+import com.hhnatsiuk.api_auth_service.exception.session.TokenEntitySaveException;
 import com.hhnatsiuk.auth.api.factrories.SessionsDTOFactory;
 import com.hhnatsiuk.auth.api.services.CryptoUtilService;
 import com.hhnatsiuk.auth.api.services.JwtService;
