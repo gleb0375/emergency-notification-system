@@ -3,7 +3,7 @@ package com.hhnatsiuk.api_auth_service.impl.controller;
 import com.hhnatsiuk.api_auth_if.api.generated.SessionsApi;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
-import com.hhnatsiuk.api_auth_service.impl.service.SessionServiceImpl;
+import com.hhnatsiuk.api_auth_if.model.generated.SessionDeleteResponseDTO;
 import com.hhnatsiuk.auth.api.services.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.context.request.ServletWebRequest;
 
 @RestController
 public class SessionController implements SessionsApi {
@@ -30,7 +28,7 @@ public class SessionController implements SessionsApi {
 
 
     @Override
-    public ResponseEntity<SessionCreateResponseDTO> signIn(SessionCreateRequestDTO sessionCreateRequestDTO) {
+    public ResponseEntity<SessionCreateResponseDTO> createSession(SessionCreateRequestDTO sessionCreateRequestDTO) {
         String ua = request.getHeader("User-Agent");
         String ip = request.getRemoteAddr();
 
@@ -47,6 +45,17 @@ public class SessionController implements SessionsApi {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(createdSession);
+    }
+
+    @Override
+    public ResponseEntity<SessionDeleteResponseDTO> deleteSession(String sessionUuid) {
+        logger.info("Received logout request for sessionUuid={}", sessionUuid);
+
+        sessionService.deleteSessionByUuid(sessionUuid);
+
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 
 }
