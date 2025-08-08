@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface TokenRepository extends JpaRepository<TokenEntity, Long> {
 
-    Optional<TokenEntity> findByRefreshToken(String token);
+    Optional<TokenEntity> findByUuid(String token);
 
     Optional<TokenEntity> findFirstByAccount_IdAndExpiresAtAfterOrderByExpiresAtDesc(Long accountId, LocalDateTime now);
 }

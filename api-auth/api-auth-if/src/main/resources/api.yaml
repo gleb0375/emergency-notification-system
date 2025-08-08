@@ -595,7 +595,7 @@ paths:
     post:
       tags: [ Sessions ]
       summary: Create a new session (sign‑in)
-      operationId: signIn
+      operationId: createSession
       requestBody:
         required: true
         content:
@@ -658,9 +658,9 @@ paths:
   /sessions/{sessionUuid}:
     delete:
       tags: [ Sessions ]
-      summary: Invalidate session and logout
+      summary: Delete (logout) an existing session
       description: Invalidate the session identified by sessionUuid
-      operationId: logout
+      operationId: deleteSession
       security:
         - bearerAuth: [ ]
       parameters:
@@ -670,9 +670,8 @@ paths:
           description: UUID of the session to invalidate
           schema:
             type: string
-            format: uuid
       responses:
-        '200':
+        '204':
           description: Logout successful
           content:
             application/json:
