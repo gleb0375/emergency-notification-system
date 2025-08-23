@@ -42,7 +42,7 @@ public class SessionServiceImpl implements SessionService {
 
     @Override
     public SessionCreateResponseDTO createSession(SessionCreateRequestDTO sessionCreateRequestDTO, String userAgent, String ipAddress) {
-        logger.info("Creating session for login: {}", sessionCreateRequestDTO.getEmail());
+        logger.info("Creating session for email: {}", sessionCreateRequestDTO.getEmail());
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -71,7 +71,7 @@ public class SessionServiceImpl implements SessionService {
                         String.format("Session %s not found", sessionUuid)
                 ));
 
-        if (!customSecurityService.hasRole("ADMIN") && !customSecurityService.isCurrentUser(tokenEntity.getAccount().getUuid())) {
+        if (!customSecurityService.hasRole("SUPERADMIN") && !customSecurityService.hasRole("ADMIN") && !customSecurityService.isCurrentUser(tokenEntity.getAccount().getUuid())) {
             throw new SessionAccessDeniedException(HttpStatus.FORBIDDEN.value(), "Forbidden to delete session");
         }
 

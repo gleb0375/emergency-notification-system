@@ -46,7 +46,9 @@ public class JwtServiceImpl implements JwtService {
 
         return Jwts.builder()
                 .setSubject(userDetails.getEmail())
-                .claim("roles", userDetails.getRoles())
+                .claim("roles", userDetails.getRoles().stream()
+                        .map(r -> r.getName().toUpperCase())
+                        .toList())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(cryptoUtilService.getAccessTokenSecretKey())
@@ -108,7 +110,9 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public List<String> extractRoles(String token) {
         logger.debug("Extracting roles from token");
-        return extractClaim(token, claims -> claims.get("roles", List.class));
+        @SuppressWarnings("unchecked")
+        List<String> roleNames = extractClaim(token, claim -> claim.get("roles", List.class));
+        return roleNames;
     }
 
 

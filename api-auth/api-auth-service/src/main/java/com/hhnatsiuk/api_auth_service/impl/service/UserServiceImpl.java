@@ -1,10 +1,13 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
 import com.hhnatsiuk.api_auth_adapter_db.repository.AuthAccountRepository;
+import com.hhnatsiuk.api_auth_adapter_db.repository.RoleRepository;
 import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
+import com.hhnatsiuk.api_auth_core.entity.RoleEntity;
 import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.UserResponseDTO;
+import com.hhnatsiuk.api_auth_service.exception.user.RoleNotFoundException;
 import com.hhnatsiuk.api_auth_service.exception.user.UserAlreadyExistsException;
 import com.hhnatsiuk.api_auth_service.exception.user.UserNotFoundException;
 import com.hhnatsiuk.api_auth_service.validation.UserValidator;
@@ -14,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,15 +29,18 @@ public class UserServiceImpl implements UserService {
 
     private static final int VERIFICATION_TTL_MIN = 60;
     private final AuthAccountRepository authAccountRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
 
-    public UserServiceImpl(AuthAccountRepository authAccountRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(AuthAccountRepository authAccountRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.authAccountRepository = authAccountRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
+    @Transactional
     public AccountCreateResponseDTO createUser(AccountCreateRequestDTO accountCreateRequest) {
         logger.info("Creating account for email={}", accountCreateRequest.getEmail());
 
@@ -51,6 +58,13 @@ public class UserServiceImpl implements UserService {
         AuthAccountEntity authAccountEntity = new AuthAccountEntity();
         authAccountEntity.setEmail(email);
         authAccountEntity.setPassword(passwordEncoder.encode(accountCreateRequest.getPassword()));
+
+
+        RoleEntity userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new RoleNotFoundException(HttpStatus.NOT_FOUND.value(), "Seed role USER not found"));
+        authAccountEntity.getRoles().add(userRole);
+
+
         authAccountEntity = authAccountRepository.save(authAccountEntity);
 
         AccountCreateResponseDTO response = new AccountCreateResponseDTO()
