@@ -1,9 +1,7 @@
 package com.hhnatsiuk.api_auth_service.impl.controller;
 
 import com.hhnatsiuk.api_auth_if.api.generated.SessionsApi;
-import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateRequestDTO;
-import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
-import com.hhnatsiuk.api_auth_if.model.generated.SessionDeleteResponseDTO;
+import com.hhnatsiuk.api_auth_if.model.generated.*;
 import com.hhnatsiuk.auth.api.services.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -11,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 public class SessionController implements SessionsApi {
@@ -45,6 +45,19 @@ public class SessionController implements SessionsApi {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(createdSession);
+    }
+
+
+    @Override
+    public ResponseEntity<SessionRefreshResponseDTO> refreshSession(String sessionUuid, SessionRefreshRequestDTO sessionRefreshRequestDTO) {
+        logger.info("Received request to refresh session with UUID: {}", sessionUuid);
+        logger.debug("Session refresh request details: {}", sessionRefreshRequestDTO);
+
+        SessionRefreshResponseDTO sessionRefreshResponseDTO = sessionService.refreshSession(sessionUuid, sessionRefreshRequestDTO.getRefreshToken());
+
+        logger.info("Session refreshed successfully for UUID: {}", sessionUuid);
+
+        return ResponseEntity.ok(sessionRefreshResponseDTO);
     }
 
     @Override

@@ -24,7 +24,7 @@ public class SessionsDTOFactoryImpl implements SessionsDTOFactory {
         try {
             TokenEntity session = TokenEntity.builder()
                     .account(account)
-                    .refreshToken(refreshTokenHash)
+                    .refreshTokenHash(refreshTokenHash)
                     .userAgent(userAgent)
                     .ipAddress(ipAddress)
                     .createdAt(createdAt)
@@ -82,7 +82,7 @@ public class SessionsDTOFactoryImpl implements SessionsDTOFactory {
         logger.info("Creating TokenEntity with user: {}", user.getId());
         try {
             TokenEntity tokenEntity = new TokenEntity();
-            tokenEntity.setRefreshToken(refreshTokenHash);
+            tokenEntity.setRefreshTokenHash(refreshTokenHash);
             tokenEntity.setCreatedAt(createdAt);
             tokenEntity.setExpiresAt(expiresAt);
             tokenEntity.setAccount(user);

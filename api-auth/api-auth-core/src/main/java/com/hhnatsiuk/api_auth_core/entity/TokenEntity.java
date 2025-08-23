@@ -27,7 +27,7 @@ public class TokenEntity {
     private AuthAccountEntity account;
 
     @Column(name = "refresh_token_hash", nullable = false, unique = true, length = 255)
-    private String refreshToken;
+    private String refreshTokenHash;
 
     @Column(name = "user_agent", length = 255)
     private String userAgent;

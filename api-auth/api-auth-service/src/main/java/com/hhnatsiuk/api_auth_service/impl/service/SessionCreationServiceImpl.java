@@ -103,7 +103,7 @@ public class SessionCreationServiceImpl implements SessionCreationService {
                                             String ipAddress) {
         logger.debug("Updating existing token with UUID: {}", existingToken.getUuid());
 
-        existingToken.setRefreshToken(refreshTokenHash);
+        existingToken.setRefreshTokenHash(refreshTokenHash);
         existingToken.setCreatedAt(now);
         existingToken.setUserAgent(userAgent);
         existingToken.setIpAddress(ipAddress);

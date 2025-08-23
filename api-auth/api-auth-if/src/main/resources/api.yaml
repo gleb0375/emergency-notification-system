@@ -723,7 +723,6 @@ paths:
           description: UUID of session to refresh
           schema:
             type: string
-            format: uuid
       requestBody:
         required: true
         content:
