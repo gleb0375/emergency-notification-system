@@ -12,5 +12,6 @@ import java.util.Optional;
 public interface AuthAccountRepository extends JpaRepository<AuthAccountEntity, Long>, JpaSpecificationExecutor<AuthAccountEntity> {
     List<AuthAccountEntity> findAuthAccountEntityByEmail(String email);
     Optional<AuthAccountEntity> findByEmail(String email);
+    Optional<AuthAccountEntity> findAuthAccountEntityByUuid(String uuid);
     boolean existsByEmail(String email);
 }

@@ -87,22 +87,23 @@ components:
     UserResponse:
       type: object
       properties:
-        id: { type: string, format: uuid }
+        uuid: { type: string }
         email: { type: string, format: email }
         roles:
           type: array
-          items: { $ref: '#/components/schemas/UserRole' }
+          items:
+            type: string
         verified: { type: boolean, description: Email verified flag }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
-      required: [ id, email, roles, verified, createdAt ]
+      required: [ uuid, email, roles, verified, createdAt ]
 
     UserDeleteResponse:
       type: object
       properties:
         message: { type: string, example: User successfully deleted }
-        id: { type: string, format: uuid }
-      required: [ message, id ]
+        uuid: { type: string }
+      required: [ message, uuid ]
 
 
     ## -------------------- EMAIL VERIFICATION --------------------
@@ -318,7 +319,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       security:
         - bearerAuth: [ ]
       x-roles: [ ADMIN ]
@@ -401,7 +401,6 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       security:
         - bearerAuth: [ ]
       x-roles: [ ADMIN ]

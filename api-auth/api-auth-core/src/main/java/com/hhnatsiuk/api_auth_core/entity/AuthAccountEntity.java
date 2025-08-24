@@ -75,6 +75,10 @@ public class AuthAccountEntity {
         this.isEmailVerified = true;
     }
 
+    public List<String> getRoleNames() {
+        return roles.stream().map(RoleEntity::getName).toList();
+    }
+
     public void recordLogin() {
         this.lastLoginAt = LocalDateTime.now();
     }
