@@ -64,7 +64,6 @@ components:
       properties:
         uuid:
           type: string
-          format: uuid
           description: Public identifier of the newly created account
         message:
           type: string

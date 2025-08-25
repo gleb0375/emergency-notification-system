@@ -68,5 +68,4 @@ public class SessionController implements SessionsApi {
                 .noContent()
                 .build();
     }
-
 }

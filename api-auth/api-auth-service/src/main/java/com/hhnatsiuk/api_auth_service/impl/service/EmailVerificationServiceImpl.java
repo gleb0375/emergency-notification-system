@@ -17,6 +17,7 @@ import com.hhnatsiuk.auth.api.integration.AmazonSesClient;
 import com.hhnatsiuk.auth.api.services.EmailVerificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,9 @@ import java.util.UUID;
 public class EmailVerificationServiceImpl implements EmailVerificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailVerificationServiceImpl.class);
-    private static final int TTL_MIN = 60;
+
+    @Value("${auth.verification.ttl-seconds:3600}")
+    private long verificationTtlSeconds;
 
     private final EmailVerificationRepository emailVerificationRepository;
     private final AuthAccountRepository authAccountRepository;
@@ -53,17 +56,19 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         EmailVerificationEntity emailVerificationEntity = EmailVerificationEntity.builder()
                 .account(authAccount)
                 .token(token)
-                .expiresAt(LocalDateTime.now().plusMinutes(TTL_MIN))
+                .expiresAt(LocalDateTime.now().plusSeconds(verificationTtlSeconds))
                 .build();
 
         emailVerificationEntity = emailVerificationRepository.save(emailVerificationEntity);
         logger.debug("Saved EmailVerification [uuid={}, token={}]", emailVerificationEntity.getUuid(), token);
 
+        int ttlMinutes = (int) Math.ceil(verificationTtlSeconds / 60.0);
+
         try {
             amazonSesClient.sendVerification(
                     sendVerificationRequestDTO.getEmail(),
                     token,
-                    TTL_MIN
+                    ttlMinutes
             );
             logger.info("Verification email sent to {}", sendVerificationRequestDTO.getEmail());
         } catch (Exception e) {
@@ -79,7 +84,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         return new VerificationResponseDTO()
                 .uuid(UUID.fromString(emailVerificationEntity.getUuid()))
                 .email(sendVerificationRequestDTO.getEmail())
-                .expiresInMinutes(TTL_MIN)
+                .expiresInMinutes(ttlMinutes)
                 .message("Verification code sent");
 
     }

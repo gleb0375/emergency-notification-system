@@ -1,7 +1,6 @@
 package com.hhnatsiuk.api_auth_service.config;
 
 import com.hhnatsiuk.api_auth_service.impl.service.ExtendedUserDetailsService;
-import com.hhnatsiuk.api_auth_service.impl.service.JwtServiceImpl;
 import com.hhnatsiuk.api_auth_service.security.JwtAuthenticationFilter;
 import com.hhnatsiuk.auth.api.services.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -135,6 +134,4 @@ public class SecurityConfig {
             throw new GeneralSecurityException("Error configuring the authentication manager", e);
         }
     }
-
-
 }

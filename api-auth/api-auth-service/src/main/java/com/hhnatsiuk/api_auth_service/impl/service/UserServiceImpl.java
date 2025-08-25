@@ -1,5 +1,6 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
+import com.hhnatsiuk.api_auth_adapter_db.mapper.AccountCreateResponseMapper;
 import com.hhnatsiuk.api_auth_adapter_db.mapper.UserResponseMapper;
 import com.hhnatsiuk.api_auth_adapter_db.repository.AuthAccountRepository;
 import com.hhnatsiuk.api_auth_adapter_db.repository.RoleRepository;
@@ -15,34 +16,38 @@ import com.hhnatsiuk.api_auth_service.validation.UserValidator;
 import com.hhnatsiuk.auth.api.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
-    private static final int VERIFICATION_TTL_MIN = 60;
+    @Value("${auth.verification.ttl-seconds:3600}")
+    private long verificationTtlSeconds;
 
     private final AuthAccountRepository authAccountRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserResponseMapper userResponseMapper;
+    private final AccountCreateResponseMapper accountCreateResponseMapper;
 
     public UserServiceImpl(AuthAccountRepository authAccountRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
-                           UserResponseMapper userResponseMapper) {
+                           UserResponseMapper userResponseMapper,
+                           AccountCreateResponseMapper accountCreateResponseMapper) {
         this.authAccountRepository = authAccountRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.userResponseMapper = userResponseMapper;
+        this.accountCreateResponseMapper = accountCreateResponseMapper;
     }
 
     @Override
@@ -73,11 +78,14 @@ public class UserServiceImpl implements UserService {
         logger.debug("Created AuthAccountEntity [id={}, uuid={}, email={}]",
                 authAccountEntity.getId(), authAccountEntity.getUuid(), authAccountEntity.getEmail());
 
-        return new AccountCreateResponseDTO()
-                .uuid(UUID.fromString(authAccountEntity.getUuid()))
-                .email(authAccountEntity.getEmail())
-                .expiresInMinutes(VERIFICATION_TTL_MIN)
-                .message("Account created; verification code sent to email");
+
+        int ttlMinutes = (int) Math.ceil(verificationTtlSeconds / 60.0);
+
+        return accountCreateResponseMapper.toDto(
+                authAccountEntity,
+                ttlMinutes,
+                "Account created; verification code sent to email"
+        );
     }
 
     @Override
@@ -92,8 +100,6 @@ public class UserServiceImpl implements UserService {
                             String.format("User with uuid '%s' not found", uuid)
                     );
                 });
-
-
 
         UserResponseDTO userResponseDTO = userResponseMapper.toDto(account);
         logger.debug("Found user uuid={}, email={}, roles={}", uuid, userResponseDTO.getEmail(), userResponseDTO.getRoles());

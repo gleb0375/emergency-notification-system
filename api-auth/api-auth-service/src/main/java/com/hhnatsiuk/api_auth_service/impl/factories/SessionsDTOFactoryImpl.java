@@ -16,30 +16,30 @@ public class SessionsDTOFactoryImpl implements SessionsDTOFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionsDTOFactoryImpl.class);
 
-    @Override
-    public TokenEntity createSession(AuthAccountEntity account, String refreshTokenHash, String userAgent, String ipAddress, LocalDateTime createdAt, LocalDateTime expiresAt) {
-        logger.info("Starting session creation: userId={}, userAgent='{}', ipAddress='{}', expiresAt={}",
-                account.getId(), userAgent, ipAddress, expiresAt);
-
-        try {
-            TokenEntity session = TokenEntity.builder()
-                    .account(account)
-                    .refreshTokenHash(refreshTokenHash)
-                    .userAgent(userAgent)
-                    .ipAddress(ipAddress)
-                    .createdAt(createdAt)
-                    .expiresAt(expiresAt)
-                    .build();
-
-            logger.debug("SessionEntity built successfully for userId={} (sessionUuid={})",
-                    account.getId(), session.getUuid());
-
-            return session;
-        } catch (Exception e) {
-            logger.error("Failed to build SessionEntity for userId={}: {}", account.getId(), e.getMessage(), e);
-            throw e;
-        }
-    }
+//    @Override
+//    public TokenEntity createSession(AuthAccountEntity account, String refreshTokenHash, String userAgent, String ipAddress, LocalDateTime createdAt, LocalDateTime expiresAt) {
+//        logger.info("Starting session creation: userId={}, userAgent='{}', ipAddress='{}', expiresAt={}",
+//                account.getId(), userAgent, ipAddress, expiresAt);
+//
+//        try {
+//            TokenEntity session = TokenEntity.builder()
+//                    .account(account)
+//                    .refreshTokenHash(refreshTokenHash)
+//                    .userAgent(userAgent)
+//                    .ipAddress(ipAddress)
+//                    .createdAt(createdAt)
+//                    .expiresAt(expiresAt)
+//                    .build();
+//
+//            logger.debug("SessionEntity built successfully for userId={} (sessionUuid={})",
+//                    account.getId(), session.getUuid());
+//
+//            return session;
+//        } catch (Exception e) {
+//            logger.error("Failed to build SessionEntity for userId={}: {}", account.getId(), e.getMessage(), e);
+//            throw e;
+//        }
+//    }
 
     @Override
     public SessionCreateResponseDTO sessionCreateToSessionCreateResponseDTO(String sessionUuid, String accessToken, String refreshToken, String userUuid) {

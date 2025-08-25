@@ -5,20 +5,18 @@ import com.hhnatsiuk.api_auth_core.entity.TokenEntity;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionRefreshResponseDTO;
 
-
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public interface SessionsDTOFactory {
 
-    TokenEntity createSession(
-            AuthAccountEntity account,
-            String refreshTokenHash,
-            String userAgent,
-            String ipAddress,
-            LocalDateTime createdAt,
-            LocalDateTime expiresAt
-    );
+//    TokenEntity createSession(
+//            AuthAccountEntity account,
+//            String refreshTokenHash,
+//            String userAgent,
+//            String ipAddress,
+//            LocalDateTime createdAt,
+//            LocalDateTime expiresAt
+//    );
 
     SessionCreateResponseDTO sessionCreateToSessionCreateResponseDTO(
             String sessionUuid,

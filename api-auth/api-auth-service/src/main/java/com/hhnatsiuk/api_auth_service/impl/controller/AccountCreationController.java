@@ -45,5 +45,4 @@ public class AccountCreationController implements AccountsApi {
                 .status(HttpStatus.CREATED)
                 .body(accountCreated);
     }
-
 }
