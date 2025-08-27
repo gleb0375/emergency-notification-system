@@ -120,6 +120,7 @@ public class JwtServiceImpl implements JwtService {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(key)
+                    .setAllowedClockSkewSeconds(15) // clock desynchronisation tolerance 15 sec
                     .build()
                     .parseClaimsJws(token)
                     .getBody();

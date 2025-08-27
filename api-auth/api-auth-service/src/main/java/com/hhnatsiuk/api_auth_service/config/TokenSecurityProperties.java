@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Getter
-public class JwtProperties {
+public class TokenSecurityProperties {
 
     @Value("${jwt.access-token.secret}")
     private String accessTokenSecretKey;
@@ -19,4 +19,7 @@ public class JwtProperties {
 
     @Value("${jwt.refresh-token.expiration}")
     private long refreshTokenExpirationInMs;
+
+    @Value("${security.token-hash.secret}")
+    private String tokenHashSecret;
 }

@@ -1,6 +1,6 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
-import com.hhnatsiuk.api_auth_service.config.JwtProperties;
+import com.hhnatsiuk.api_auth_service.config.TokenSecurityProperties;
 import com.hhnatsiuk.api_auth_service.exception.session.TokenHashingException;
 import com.hhnatsiuk.auth.api.services.CryptoUtilService;
 import org.apache.logging.log4j.LogManager;
@@ -22,10 +22,10 @@ public class CryptoUtilServiceImpl implements CryptoUtilService {
     private static final Logger logger = LogManager.getLogger(CryptoUtilServiceImpl.class);
     private static final String HMAC_ALGORITHM = "HmacSHA256";
 
-    private final JwtProperties jwtProperties;
+    private final TokenSecurityProperties tokenSecurityProperties;
 
-    public CryptoUtilServiceImpl(JwtProperties jwtProperties) {
-        this.jwtProperties = jwtProperties;
+    public CryptoUtilServiceImpl(TokenSecurityProperties tokenSecurityProperties) {
+        this.tokenSecurityProperties = tokenSecurityProperties;
     }
 
     @Override
@@ -33,8 +33,8 @@ public class CryptoUtilServiceImpl implements CryptoUtilService {
         logger.info("Hashing token: {}", token);
         try {
             Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-            SecretKey secretKey = getAccessTokenSecretKey();
-            mac.init(secretKey);
+
+            mac.init(getTokenHashKey());
 
             byte[] hashedBytes = mac.doFinal(token.getBytes(StandardCharsets.UTF_8));
             String hashedToken = Base64.getUrlEncoder().withoutPadding().encodeToString(hashedBytes);
@@ -49,23 +49,28 @@ public class CryptoUtilServiceImpl implements CryptoUtilService {
 
     @Override
     public SecretKey getAccessTokenSecretKey() {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.getAccessTokenSecretKey());
+        byte[] keyBytes = Base64.getDecoder().decode(tokenSecurityProperties.getAccessTokenSecretKey());
         return new SecretKeySpec(keyBytes, HMAC_ALGORITHM);
     }
 
     @Override
     public SecretKey getRefreshTokenKey() {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.getRefreshTokenSecretKey());
+        byte[] keyBytes = Base64.getDecoder().decode(tokenSecurityProperties.getRefreshTokenSecretKey());
+        return new SecretKeySpec(keyBytes, HMAC_ALGORITHM);
+    }
+
+    private SecretKey getTokenHashKey() {
+        byte[] keyBytes = Base64.getDecoder().decode(tokenSecurityProperties.getTokenHashSecret());
         return new SecretKeySpec(keyBytes, HMAC_ALGORITHM);
     }
 
     @Override
     public long getAccessTokenExpirationInMs() {
-        return jwtProperties.getAccessTokenExpirationInMs();
+        return tokenSecurityProperties.getAccessTokenExpirationInMs();
     }
 
     @Override
     public long getRefreshTokenExpirationInMs() {
-        return jwtProperties.getRefreshTokenExpirationInMs();
+        return tokenSecurityProperties.getRefreshTokenExpirationInMs();
     }
 }
