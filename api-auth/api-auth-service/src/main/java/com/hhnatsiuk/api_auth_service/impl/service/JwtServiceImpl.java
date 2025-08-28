@@ -9,11 +9,13 @@ import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -21,6 +23,15 @@ public class JwtServiceImpl implements JwtService {
 
     private static final Logger logger = LogManager.getLogger(JwtServiceImpl.class);
     private final CryptoUtilService cryptoUtilService;
+
+    @Value("${jwt.issuer:auth-service}")
+    private String issuer;
+
+    @Value("${jwt.audience:api-gateway}")
+    private String audience;
+
+    @Value("${jwt.clock-skew-seconds:15}")
+    private long clockSkewSeconds;
 
     public JwtServiceImpl(CryptoUtilService cryptoUtilService) {
         this.cryptoUtilService = cryptoUtilService;
@@ -38,22 +49,41 @@ public class JwtServiceImpl implements JwtService {
         return claimsResolver.apply(claims);
     }
 
+
     @Override
     public String generateAccessToken(AuthAccountEntity userDetails) {
+        return buildAccessToken(userDetails, null);
+    }
+
+    public String generateAccessToken(AuthAccountEntity userDetails, String sessionUuid) {
+        return buildAccessToken(userDetails, sessionUuid);
+    }
+
+    private String buildAccessToken(AuthAccountEntity userDetails, String sessionUuid) {
         logger.info("Generating access token for user: {}", userDetails.getEmail());
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + cryptoUtilService.getAccessTokenExpirationInMs());
 
-        return Jwts.builder()
-                .setSubject(userDetails.getEmail())
+        var builder = Jwts.builder()
+                .setIssuer(issuer)                        // iss
+                .setAudience(audience)                    // aud
+                .setId(UUID.randomUUID().toString())      // jti
+                .setSubject(userDetails.getEmail())       // sub
+                .claim("uid", userDetails.getUuid())      // uuid
                 .claim("roles", userDetails.getRoles().stream()
                         .map(r -> r.getName().toUpperCase())
                         .toList())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(cryptoUtilService.getAccessTokenSecretKey())
-                .compact();
+                .signWith(cryptoUtilService.getAccessTokenSecretKey());
+
+        if (sessionUuid != null) {
+            builder.claim("sid", sessionUuid);           //  id session
+        }
+
+        return builder.compact();
     }
+
 
     @Override
     public String generateRefreshToken(AuthAccountEntity userDetails) {
@@ -62,12 +92,15 @@ public class JwtServiceImpl implements JwtService {
         Date expiryDate = new Date(now.getTime() + cryptoUtilService.getRefreshTokenExpirationInMs());
 
         return Jwts.builder()
+                .setIssuer(issuer)
+                .setAudience(audience)
                 .setSubject(userDetails.getEmail())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(cryptoUtilService.getRefreshTokenKey())
                 .compact();
     }
+
 
     @Override
     public boolean validateAccessToken(String token) {
@@ -102,7 +135,6 @@ public class JwtServiceImpl implements JwtService {
             logger.debug("Resolved token: {}", token);
             return token;
         }
-
         logger.warn("No token found in request header");
         return null;
     }
@@ -115,12 +147,20 @@ public class JwtServiceImpl implements JwtService {
         return roleNames;
     }
 
+    public String extractUserUuid(String token) {
+        return extractClaim(token, c -> c.get("uid", String.class));
+    }
+    public String extractSessionId(String token) {
+        return extractClaim(token, c -> c.get("sid", String.class));
+    }
 
     private Claims parseToken(String token, SecretKey key) {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(key)
-                    .setAllowedClockSkewSeconds(15) // clock desynchronisation tolerance 15 sec
+                    .requireIssuer(issuer)                 // iss
+                    .requireAudience(audience)             // aud
+                    .setAllowedClockSkewSeconds(clockSkewSeconds)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
