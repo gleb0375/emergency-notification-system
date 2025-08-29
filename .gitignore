@@ -22,3 +22,8 @@ api-auth/api-auth-service/log
 api-auth/api-auth-service/target
 api-auth/api-auth-if/api-auth-if.iml
 api-auth/api-auth-core/target
+api-contact/.mvn
+*.gitattributes
+api-contact/.gitignore
+api-contact/mvnw
+api-contact/mvnw.cmd
