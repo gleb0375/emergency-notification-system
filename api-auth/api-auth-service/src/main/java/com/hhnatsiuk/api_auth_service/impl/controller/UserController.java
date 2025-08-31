@@ -2,7 +2,7 @@ package com.hhnatsiuk.api_auth_service.impl.controller;
 
 import com.hhnatsiuk.api_auth_if.api.generated.UsersApi;
 import com.hhnatsiuk.api_auth_if.model.generated.UserResponseDTO;
-import com.hhnatsiuk.auth.api.services.UserService;
+import com.hhnatsiuk.auth.api.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;

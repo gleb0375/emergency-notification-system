@@ -1,8 +1,8 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
 import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
-import com.hhnatsiuk.auth.api.services.CryptoUtilService;
-import com.hhnatsiuk.auth.api.services.JwtService;
+import com.hhnatsiuk.auth.api.service.CryptoUtilService;
+import com.hhnatsiuk.auth.api.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;

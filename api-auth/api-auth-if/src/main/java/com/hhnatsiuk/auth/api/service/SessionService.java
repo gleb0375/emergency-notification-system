@@ -1,4 +1,4 @@
-package com.hhnatsiuk.auth.api.services;
+package com.hhnatsiuk.auth.api.service;
 
 import com.hhnatsiuk.api_auth_if.model.generated.SessionRefreshResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateRequestDTO;

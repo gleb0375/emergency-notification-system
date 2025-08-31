@@ -1,4 +1,4 @@
-package com.hhnatsiuk.auth.api.factrories;
+package com.hhnatsiuk.auth.api.factrory;
 
 import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
 import com.hhnatsiuk.api_auth_core.entity.TokenEntity;

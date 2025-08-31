@@ -2,7 +2,7 @@ package com.hhnatsiuk.api_auth_service.config;
 
 import com.hhnatsiuk.api_auth_service.impl.service.ExtendedUserDetailsService;
 import com.hhnatsiuk.api_auth_service.security.JwtAuthenticationFilter;
-import com.hhnatsiuk.auth.api.services.JwtService;
+import com.hhnatsiuk.auth.api.service.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

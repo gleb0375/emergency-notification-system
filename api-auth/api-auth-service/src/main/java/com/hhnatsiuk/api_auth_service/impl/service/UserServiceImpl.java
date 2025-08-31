@@ -13,7 +13,7 @@ import com.hhnatsiuk.api_auth_service.exception.user.RoleNotFoundException;
 import com.hhnatsiuk.api_auth_service.exception.user.UserAlreadyExistsException;
 import com.hhnatsiuk.api_auth_service.exception.user.UserNotFoundException;
 import com.hhnatsiuk.api_auth_service.validation.UserValidator;
-import com.hhnatsiuk.auth.api.services.UserService;
+import com.hhnatsiuk.auth.api.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

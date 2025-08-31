@@ -1,6 +1,6 @@
 package com.hhnatsiuk.api_auth_service.security;
 
-import com.hhnatsiuk.auth.api.services.JwtService;
+import com.hhnatsiuk.auth.api.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

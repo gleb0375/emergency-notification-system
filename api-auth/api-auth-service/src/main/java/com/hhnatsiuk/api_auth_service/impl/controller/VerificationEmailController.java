@@ -5,7 +5,7 @@ import com.hhnatsiuk.api_auth_if.model.generated.ConfirmEmailRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.ConfirmEmailResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SendVerificationRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.VerificationResponseDTO;
-import com.hhnatsiuk.auth.api.services.EmailVerificationService;
+import com.hhnatsiuk.auth.api.service.EmailVerificationService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

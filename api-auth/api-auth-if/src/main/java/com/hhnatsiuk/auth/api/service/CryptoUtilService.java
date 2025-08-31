@@ -1,4 +1,4 @@
-package com.hhnatsiuk.auth.api.services;
+package com.hhnatsiuk.auth.api.service;
 
 import javax.crypto.SecretKey;
 

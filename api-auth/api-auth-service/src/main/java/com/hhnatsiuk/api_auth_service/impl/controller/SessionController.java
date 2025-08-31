@@ -2,7 +2,7 @@ package com.hhnatsiuk.api_auth_service.impl.controller;
 
 import com.hhnatsiuk.api_auth_if.api.generated.SessionsApi;
 import com.hhnatsiuk.api_auth_if.model.generated.*;
-import com.hhnatsiuk.auth.api.services.SessionService;
+import com.hhnatsiuk.auth.api.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -2,7 +2,7 @@ package com.hhnatsiuk.api_auth_service.impl.service;
 
 import com.hhnatsiuk.api_auth_service.config.TokenSecurityProperties;
 import com.hhnatsiuk.api_auth_service.exception.session.TokenHashingException;
-import com.hhnatsiuk.auth.api.services.CryptoUtilService;
+import com.hhnatsiuk.auth.api.service.CryptoUtilService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;

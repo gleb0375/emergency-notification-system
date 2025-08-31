@@ -1,10 +1,10 @@
-package com.hhnatsiuk.api_auth_service.impl.factories;
+package com.hhnatsiuk.api_auth_service.impl.factory;
 
 import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
 import com.hhnatsiuk.api_auth_core.entity.TokenEntity;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionRefreshResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
-import com.hhnatsiuk.auth.api.factrories.SessionsDTOFactory;
+import com.hhnatsiuk.auth.api.factrory.SessionsDTOFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package com.hhnatsiuk.auth.api.services;
+package com.hhnatsiuk.auth.api.service;
 
 public interface CustomSecurityService {
 

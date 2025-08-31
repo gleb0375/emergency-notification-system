@@ -1,8 +1,8 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
 import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
-import com.hhnatsiuk.auth.api.services.CustomSecurityService;
-import com.hhnatsiuk.auth.api.services.UserService;
+import com.hhnatsiuk.auth.api.service.CustomSecurityService;
+import com.hhnatsiuk.auth.api.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
