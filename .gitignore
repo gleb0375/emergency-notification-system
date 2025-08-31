@@ -27,3 +27,9 @@ api-contact/.mvn
 api-contact/.gitignore
 api-contact/mvnw
 api-contact/mvnw.cmd
+api-contact/.idea
+api-contact/api-contact-adapter-db/target
+api-contact/api-contact-core/target
+api-contact/api-contact-if/target
+api-contact/api-contact-service/log
+api-contact/api-contact-service/target
