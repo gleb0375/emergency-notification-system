@@ -46,9 +46,6 @@ public class AuthAccountEntity {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<RoleEntity> roles = new LinkedHashSet<>();
 
-    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
-    private UserProfileEntity userProfile;
-
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmailVerificationEntity> verificationTokens = new ArrayList<>();
 
@@ -81,11 +78,6 @@ public class AuthAccountEntity {
 
     public void recordLogin() {
         this.lastLoginAt = LocalDateTime.now();
-    }
-
-    public void setUserProfile(UserProfileEntity profile) {
-        profile.setAccount(this);
-        this.userProfile = profile;
     }
 
     public void addVerificationToken(EmailVerificationEntity token) {
