@@ -47,20 +47,6 @@ CREATE TABLE IF NOT EXISTS email_verifications (
   INDEX idx_ev_expires (expires_at)
 );
 
--- ---------- USER PROFILES ----------
-CREATE TABLE IF NOT EXISTS user_profiles (
-  id BIGINT  UNSIGNED NOT NULL AUTO_INCREMENT,
-  uuid CHAR(36) NOT NULL UNIQUE,
-  account_id BIGINT UNSIGNED NOT NULL UNIQUE,
-  telegram_username VARCHAR(32),
-  phone_number VARCHAR(20),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  FOREIGN KEY (account_id) REFERENCES auth_accounts(id) ON DELETE CASCADE,
-  INDEX idx_tel_username (telegram_username)
-);
-
 -- ---------- SESSIONS (refresh‑tokens) ----------
 CREATE TABLE IF NOT EXISTS tokens (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
