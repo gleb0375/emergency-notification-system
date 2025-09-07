@@ -2,20 +2,21 @@ USE contact_db;
 
 CREATE TABLE IF NOT EXISTS user_profiles (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  uuid CHAR(36) NOT NULL UNIQUE,                 -- own UUID профиля (not a account_uuid)
+  uuid CHAR(36) NOT NULL UNIQUE,                 -- own UUID profile (not a account_uuid)
   account_uuid CHAR(36) NOT NULL UNIQUE,         -- soft-link to auth_db.auth_accounts.uuid
-  display_name VARCHAR(100) NULL,
-  telegram_username VARCHAR(32) NULL,
-  phone_number VARCHAR(20) NULL,
-  preferred_channel ENUM('email','sms','telegram') NULL,
-  is_email_verified BOOLEAN DEFAULT FALSE,
+  surname VARCHAR(100) NULL,  
+  name VARCHAR(50) NULL,  
+  email VARCHAR(255) NOT NULL UNIQUE,  
+  telegram_username VARCHAR(32) NULL UNIQUE,
+  phone_number VARCHAR(20) NULL UNIQUE,
+  preferred_channel ENUM('email','sms','telegram') DEFAULT 'email',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX idx_up_account_uuid (account_uuid),
   INDEX idx_up_telegram (telegram_username),
   INDEX idx_up_phone (phone_number)
-) ENGINE=InnoDB;
+);
 
 -- ---------- CONTACT GROUPS ----------
 CREATE TABLE IF NOT EXISTS contact_groups (
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS contact_groups (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX idx_cg_created_by_uuid (created_by_account_uuid)
-) ENGINE=InnoDB;
+);
 
 -- ---------- NOTIFICATION TEMPLATES ----------
 CREATE TABLE IF NOT EXISTS notification_templates (
@@ -38,7 +39,7 @@ CREATE TABLE IF NOT EXISTS notification_templates (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX idx_nt_created_by_uuid (created_by_account_uuid)
-) ENGINE=InnoDB;
+);
 
 -- ---------- GROUP MEMBERSHIPS (group ↔ user_profile) ----------
 CREATE TABLE IF NOT EXISTS group_memberships (
@@ -50,7 +51,7 @@ CREATE TABLE IF NOT EXISTS group_memberships (
   FOREIGN KEY (profile_id) REFERENCES user_profiles(id)  ON DELETE CASCADE,
   INDEX idx_gm_group (group_id),
   INDEX idx_gm_profile (profile_id)
-) ENGINE=InnoDB;
+);
 
 -- ---------- TEMPLATE TARGETS (template ↔ group) ----------
 CREATE TABLE IF NOT EXISTS template_targets (
@@ -62,7 +63,7 @@ CREATE TABLE IF NOT EXISTS template_targets (
   FOREIGN KEY (group_id)    REFERENCES contact_groups(id)         ON DELETE CASCADE,
   INDEX idx_tt_template (template_id),
   INDEX idx_tt_group (group_id)
-) ENGINE=InnoDB;
+);
 
 -- ---------- MESSAGE LOG (event consumer idempotency) ----------
 CREATE TABLE IF NOT EXISTS message_log (
@@ -77,4 +78,4 @@ CREATE TABLE IF NOT EXISTS message_log (
   PRIMARY KEY (id),
   UNIQUE KEY uq_message_id (message_id),
   INDEX idx_ml_received (received_at)
-) ENGINE=InnoDB;
+);

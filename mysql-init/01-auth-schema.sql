@@ -62,3 +62,22 @@ CREATE TABLE IF NOT EXISTS tokens (
   INDEX idx_rt_hash (refresh_token_hash),
   INDEX idx_sessions_account (account_id)
 );
+
+CREATE TABLE IF NOT EXISTS outbox_events (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  event_id CHAR(36) NOT NULL,                
+  aggregate_type VARCHAR(50) NOT NULL,       
+  aggregate_id CHAR(36) NOT NULL,            
+  event_type VARCHAR(50) NOT NULL,           
+  payload JSON NOT NULL,                     
+  status ENUM('NEW','PUBLISHED','FAILED') NOT NULL DEFAULT 'NEW',
+  occurred_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  published_at TIMESTAMP NULL,
+  publish_attempts INT NOT NULL DEFAULT 0,
+  last_error TEXT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_outbox_event_id (event_id),
+  INDEX idx_outbox_pick (status, published_at, publish_attempts),
+  INDEX idx_outbox_type_time (event_type, occurred_at)
+);
+
