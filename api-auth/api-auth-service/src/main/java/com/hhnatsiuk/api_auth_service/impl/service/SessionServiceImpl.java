@@ -1,8 +1,8 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
 import com.hhnatsiuk.api_auth_adapter_db.repository.TokenRepository;
-import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
-import com.hhnatsiuk.api_auth_core.entity.TokenEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.AuthAccountEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.TokenEntity;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionRefreshResponseDTO;

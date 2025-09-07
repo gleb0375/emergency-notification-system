@@ -1,7 +1,7 @@
 package com.hhnatsiuk.auth.api.factrory;
 
-import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
-import com.hhnatsiuk.api_auth_core.entity.TokenEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.AuthAccountEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.TokenEntity;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SessionRefreshResponseDTO;
 

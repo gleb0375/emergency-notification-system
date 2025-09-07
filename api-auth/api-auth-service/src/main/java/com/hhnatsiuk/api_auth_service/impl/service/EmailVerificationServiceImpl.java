@@ -2,8 +2,8 @@ package com.hhnatsiuk.api_auth_service.impl.service;
 
 import com.hhnatsiuk.api_auth_adapter_db.repository.AuthAccountRepository;
 import com.hhnatsiuk.api_auth_adapter_db.repository.EmailVerificationRepository;
-import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
-import com.hhnatsiuk.api_auth_core.entity.EmailVerificationEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.AuthAccountEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.EmailVerificationEntity;
 import com.hhnatsiuk.api_auth_if.model.generated.ConfirmEmailRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.ConfirmEmailResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SendVerificationRequestDTO;

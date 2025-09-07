@@ -1,6 +1,6 @@
 package com.hhnatsiuk.api_auth_adapter_db.repository;
 
-import com.hhnatsiuk.api_auth_core.entity.RoleEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

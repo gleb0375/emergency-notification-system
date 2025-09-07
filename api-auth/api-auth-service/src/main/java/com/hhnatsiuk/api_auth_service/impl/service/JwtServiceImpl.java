@@ -1,6 +1,6 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
-import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.AuthAccountEntity;
 import com.hhnatsiuk.auth.api.service.CryptoUtilService;
 import com.hhnatsiuk.auth.api.service.JwtService;
 import io.jsonwebtoken.Claims;

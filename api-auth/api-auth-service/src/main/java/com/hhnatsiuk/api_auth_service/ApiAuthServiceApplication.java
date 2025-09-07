@@ -19,7 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 })
 
 @EnableJpaRepositories(basePackages = "com.hhnatsiuk.api_auth_adapter_db.repository")
-@EntityScan(basePackages = "com.hhnatsiuk.api_auth_core.entity")
+@EntityScan(basePackages = {
+        "com.hhnatsiuk.api_auth_core.domain.entity",
+        "com.hhnatsiuk.api_auth_core.outbox"
+})
 public class ApiAuthServiceApplication {
 
     private static final Logger logger = LogManager.getLogger(ApiAuthServiceApplication.class);

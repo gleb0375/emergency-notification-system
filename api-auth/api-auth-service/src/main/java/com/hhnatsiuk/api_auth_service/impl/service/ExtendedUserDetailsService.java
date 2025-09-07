@@ -1,6 +1,6 @@
 package com.hhnatsiuk.api_auth_service.impl.service;
 
-import com.hhnatsiuk.api_auth_core.entity.AuthAccountEntity;
+import com.hhnatsiuk.api_auth_core.domain.entity.AuthAccountEntity;
 import com.hhnatsiuk.auth.api.service.UserService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

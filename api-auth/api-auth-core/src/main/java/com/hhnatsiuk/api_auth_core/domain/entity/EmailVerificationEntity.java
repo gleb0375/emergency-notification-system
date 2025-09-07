@@ -1,4 +1,4 @@
-package com.hhnatsiuk.api_auth_core.entity;
+package com.hhnatsiuk.api_auth_core.domain.entity;
 
 
 import jakarta.persistence.*;
