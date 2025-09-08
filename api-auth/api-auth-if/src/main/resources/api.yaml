@@ -232,44 +232,33 @@ components:
     ProfileUpsertRequest:
       type: object
       properties:
-        displayName:
+        email:
           type: string
-          maxLength: 100
-        telegramUsername:
-          type: string
-          maxLength: 32
-        phoneNumber:
-          type: string
-          maxLength: 20
-        preferredChannel:
-          type: string
-          enum: [ email, sms, telegram ]
-        isEmailVerified:
-          type: boolean
-      required: [ ]
+          format: email
+      required: [ email ]
 
-    ProfileResponse:
+    ProfileUpsertResponse:
       type: object
       properties:
         accountUuid:
           type: string
-        displayName:
+        email:
           type: string
-        telegramUsername:
-          type: string
-        phoneNumber:
-          type: string
-        preferredChannel:
-          type: string
-        isEmailVerified:
-          type: boolean
+          format: email
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
-      required: [ accountUuid ]
+      required: [ accountUuid, email ]
+
+    ProfileDeleteResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [ message ]
 
 
 paths:
@@ -824,9 +813,9 @@ paths:
 
   /profiles/{accountUuid}:
     put:
-      tags: [ Profiles, internal ]
-      summary: Create or update user profile
-      description: Internal endpoint called by api-auth to upsert a profile by accountUuid.
+      tags: [ Profiles (internal) ]
+      summary: Create or update user profile (email is already verified in auth)
+      description: Called by api-auth after email verification to upsert a profile by accountUuid.
       operationId: upsertProfile
       parameters:
         - name: accountUuid
@@ -835,24 +824,24 @@ paths:
           schema:
             type: string
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ProfileUpsertRequest'
       responses:
-        '200':
-          description: Profile updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProfileResponse'
         '201':
           description: Profile created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileResponse'
+                $ref: '#/components/schemas/ProfileUpsertResponse'
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileUpsertResponse'
         '400':
           description: Validation error
           content:
@@ -871,3 +860,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+
+    delete:
+      tags: [ Profiles (internal) ]
+      summary: Delete user profile
+      description: Internal endpoint called by api-auth when a user is deleted.
+      operationId: deleteProfile
+      parameters:
+        - name: accountUuid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Profile deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileDeleteResponse'
+        '401':
+          description: Unauthorized (missing/invalid internal token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
