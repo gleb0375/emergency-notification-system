@@ -201,6 +201,23 @@ components:
           type: string
       required: [ message ]
 
+    ## -------------------- OBJECTS FOR RABBIT --------------------
+    EmailVerifiedEventPayload:
+      type: object
+      properties:
+        accountUuid:
+          type: string
+        email:
+          type: string
+      required: [ accountUuid, email ]
+
+    UserDeletedEventPayload:
+      type: object
+      properties:
+        accountUuid:
+          type: string
+      required: [ accountUuid ]
+
     ## -------------------- COMMON ERROR SCHEMAS --------------------
     ErrorResponse:
       type: object

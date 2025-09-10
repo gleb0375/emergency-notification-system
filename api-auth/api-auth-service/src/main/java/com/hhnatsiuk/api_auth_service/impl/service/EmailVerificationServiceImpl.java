@@ -4,6 +4,7 @@ import com.hhnatsiuk.api_auth_adapter_db.repository.AuthAccountRepository;
 import com.hhnatsiuk.api_auth_adapter_db.repository.EmailVerificationRepository;
 import com.hhnatsiuk.api_auth_core.domain.entity.AuthAccountEntity;
 import com.hhnatsiuk.api_auth_core.domain.entity.EmailVerificationEntity;
+import com.hhnatsiuk.api_auth_core.outbox.OutboxAppender;
 import com.hhnatsiuk.api_auth_if.model.generated.ConfirmEmailRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.ConfirmEmailResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.SendVerificationRequestDTO;
@@ -34,11 +35,16 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     private final EmailVerificationRepository emailVerificationRepository;
     private final AuthAccountRepository authAccountRepository;
     private final AmazonSesClient amazonSesClient;
+    private final OutboxAppender outboxAppender;
 
-    public EmailVerificationServiceImpl(EmailVerificationRepository emailVerificationRepository, AuthAccountRepository authAccountRepository, AmazonSesClient amazonSesClient) {
+    public EmailVerificationServiceImpl(EmailVerificationRepository emailVerificationRepository,
+                                        AuthAccountRepository authAccountRepository,
+                                        AmazonSesClient amazonSesClient,
+                                        OutboxAppender outboxAppender) {
         this.emailVerificationRepository = emailVerificationRepository;
         this.authAccountRepository = authAccountRepository;
         this.amazonSesClient = amazonSesClient;
+        this.outboxAppender = outboxAppender;
     }
 
     @Override
@@ -115,6 +121,13 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         account.verifyEmail();
         authAccountRepository.save(account);
         logger.info("Email {} marked as verified", request.getEmail());
+
+        logger.debug("Appending outbox event: user.email_verified for accountUuid={}, email={}",
+                account.getUuid(), account.getEmail());
+
+        outboxAppender.appendEmailVerified(account.getUuid(), account.getEmail());
+
+        logger.info("Outbox event persisted: user.email_verified for accountUuid={}", account.getUuid());
 
         emailVerificationRepository.deleteAllByAccount(account);
         logger.debug("All verification tokens for {} have been deleted", account.getUuid());

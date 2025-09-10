@@ -1,23 +1,98 @@
 package com.hhnatsiuk.api_auth_adapter_db.repository.outbox;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhnatsiuk.api_auth_core.outbox.OutboxAppender;
+import com.hhnatsiuk.api_auth_core.outbox.OutboxEventEntity;
+import com.hhnatsiuk.api_auth_core.outbox.OutboxStatus;
+import com.hhnatsiuk.api_auth_if.model.generated.EmailVerifiedEventPayloadDTO;
+import com.hhnatsiuk.api_auth_if.model.generated.UserDeletedEventPayloadDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class OutboxAppenderJpa implements OutboxAppender {
 
-    public OutboxAppenderJpa(OutboxEventRepository outboxEventRepository) {
-        this.outboxEventRepository = outboxEventRepository;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(OutboxAppenderJpa.class);
+
+    private static final String AGGREGATE_TYPE_AUTH_ACCOUNT = "auth_account";
+    private static final String USER_EMAIL_VERIFIED = "user.email_verified";
+    private static final String USER_DELETED = "user.deleted";
 
     private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
+
+    public OutboxAppenderJpa(OutboxEventRepository outboxEventRepository, ObjectMapper objectMapper) {
+        this.outboxEventRepository = outboxEventRepository;
+        this.objectMapper = objectMapper;
+    }
 
     @Transactional
     @Override
-    public void appendEmailVerified(String accountUuid, String email) { /* save NEW event */ }
+    public void appendEmailVerified(String accountUuid, String email) {
+        logger.debug("Preparing outbox event: {} for accountUuid={}, email={}",
+                USER_EMAIL_VERIFIED, accountUuid, email);
+
+        var payloadObj = new EmailVerifiedEventPayloadDTO()
+                .accountUuid(accountUuid)
+                .email(email);
+
+        String payloadJson;
+        try {
+            payloadJson = objectMapper.writeValueAsString(payloadObj);
+            logger.debug("Serialized payload: {}", payloadJson);
+        } catch (JsonProcessingException e) {
+            logger.error("Failed to serialize EmailVerifiedEventPayloadDTO for accountUuid={}", accountUuid, e);
+            throw new RuntimeException("Failed to serialize EmailVerifiedEventPayloadDTO", e);
+        }
+
+        var event = OutboxEventEntity.builder()
+                .eventId(UUID.randomUUID().toString())
+                .aggregateType(AGGREGATE_TYPE_AUTH_ACCOUNT)
+                .aggregateId(accountUuid)
+                .eventType(USER_EMAIL_VERIFIED)
+                .payload(payloadJson)
+                .status(OutboxStatus.NEW)
+                .occurredAt(LocalDateTime.now())
+                .build();
+
+        outboxEventRepository.save(event);
+        logger.info("Outbox event persisted: {} for accountUuid={}", USER_EMAIL_VERIFIED, accountUuid);
+    }
 
     @Transactional
     @Override
-    public void appendUserDeleted(String accountUuid) { /* save NEW event */ }
+    public void appendUserDeleted(String accountUuid) {
+        logger.debug("Preparing outbox event: {} for accountUuid={}", USER_DELETED, accountUuid);
+
+        var payloadObj = new UserDeletedEventPayloadDTO()
+                .accountUuid(accountUuid);
+
+        String payloadJson;
+        try {
+            payloadJson = objectMapper.writeValueAsString(payloadObj);
+            logger.debug("Serialized payload: {}", payloadJson);
+        } catch (JsonProcessingException e) {
+            logger.error("Failed to serialize UserDeletedEventPayloadDTO for accountUuid={}", accountUuid, e);
+            throw new RuntimeException("Failed to serialize UserDeletedEventPayloadDTO", e);
+        }
+
+        var event = OutboxEventEntity.builder()
+                .eventId(UUID.randomUUID().toString())
+                .aggregateType(AGGREGATE_TYPE_AUTH_ACCOUNT)
+                .aggregateId(accountUuid)
+                .eventType(USER_DELETED)
+                .payload(payloadJson)
+                .status(OutboxStatus.NEW)
+                .occurredAt(LocalDateTime.now())
+                .build();
+
+        outboxEventRepository.save(event);
+        logger.info("Outbox event persisted: {} for accountUuid={}", USER_DELETED, accountUuid);
+    }
 }

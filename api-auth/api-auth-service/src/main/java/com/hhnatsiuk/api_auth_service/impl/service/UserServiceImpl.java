@@ -6,6 +6,7 @@ import com.hhnatsiuk.api_auth_adapter_db.repository.AuthAccountRepository;
 import com.hhnatsiuk.api_auth_adapter_db.repository.RoleRepository;
 import com.hhnatsiuk.api_auth_core.domain.entity.AuthAccountEntity;
 import com.hhnatsiuk.api_auth_core.domain.entity.RoleEntity;
+import com.hhnatsiuk.api_auth_core.outbox.OutboxAppender;
 import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateRequestDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.AccountCreateResponseDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.UserResponseDTO;
@@ -37,17 +38,20 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserResponseMapper userResponseMapper;
     private final AccountCreateResponseMapper accountCreateResponseMapper;
+    private final OutboxAppender outboxAppender;
 
     public UserServiceImpl(AuthAccountRepository authAccountRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
                            UserResponseMapper userResponseMapper,
-                           AccountCreateResponseMapper accountCreateResponseMapper) {
+                           AccountCreateResponseMapper accountCreateResponseMapper,
+                           OutboxAppender outboxAppender) {
         this.authAccountRepository = authAccountRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.userResponseMapper = userResponseMapper;
         this.accountCreateResponseMapper = accountCreateResponseMapper;
+        this.outboxAppender = outboxAppender;
     }
 
     @Override
@@ -131,6 +135,11 @@ public class UserServiceImpl implements UserService {
                 });
 
         authAccountRepository.delete(account);
+
+        logger.debug("Appending outbox event: user.deleted for accountUuid={}", uuid);
+        outboxAppender.appendUserDeleted(uuid);
+        logger.info("Outbox event persisted: user.deleted for accountUuid={}", uuid);
+
         logger.info("User uuid={} deleted", uuid);
     }
 
