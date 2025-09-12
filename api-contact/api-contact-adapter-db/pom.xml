@@ -35,13 +35,13 @@
 
         <dependency>
             <groupId>com.hhnatsiuk</groupId>
-            <artifactId>api-auth-if</artifactId>
+            <artifactId>api-contact-if</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.hhnatsiuk</groupId>
-            <artifactId>api-auth-core</artifactId>
+            <artifactId>api-contact-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
