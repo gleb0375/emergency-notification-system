@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhnatsiuk.api_auth_core.outbox.OutboxAppender;
 import com.hhnatsiuk.api_auth_core.outbox.OutboxEventEntity;
+import com.hhnatsiuk.api_auth_core.outbox.OutboxSavedEvent;
 import com.hhnatsiuk.api_auth_core.outbox.OutboxStatus;
 import com.hhnatsiuk.api_auth_if.model.generated.EmailVerifiedEventPayloadDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.UserDeletedEventPayloadDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,10 +28,14 @@ public class OutboxAppenderJpa implements OutboxAppender {
 
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher appEventPublisher;
 
-    public OutboxAppenderJpa(OutboxEventRepository outboxEventRepository, ObjectMapper objectMapper) {
+    public OutboxAppenderJpa(OutboxEventRepository outboxEventRepository,
+                             ObjectMapper objectMapper,
+                             ApplicationEventPublisher appEventPublisher) {
         this.outboxEventRepository = outboxEventRepository;
         this.objectMapper = objectMapper;
+        this.appEventPublisher = appEventPublisher;
     }
 
     @Transactional
@@ -63,6 +69,8 @@ public class OutboxAppenderJpa implements OutboxAppender {
 
         outboxEventRepository.save(event);
         logger.info("Outbox event persisted: {} for accountUuid={}", USER_EMAIL_VERIFIED, accountUuid);
+
+        appEventPublisher.publishEvent(new OutboxSavedEvent(event.getEventId()));
     }
 
     @Transactional
@@ -94,5 +102,7 @@ public class OutboxAppenderJpa implements OutboxAppender {
 
         outboxEventRepository.save(event);
         logger.info("Outbox event persisted: {} for accountUuid={}", USER_DELETED, accountUuid);
+
+        appEventPublisher.publishEvent(new OutboxSavedEvent(event.getEventId()));
     }
 }
