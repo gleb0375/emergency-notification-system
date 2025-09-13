@@ -125,7 +125,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         logger.debug("Appending outbox event: user.email_verified for accountUuid={}, email={}",
                 account.getUuid(), account.getEmail());
 
-        outboxAppender.appendEmailVerified(account.getUuid(), account.getEmail());
+        outboxAppender.appendUserCreated(account.getUuid(), account.getEmail());
 
         logger.info("Outbox event persisted: user.email_verified for accountUuid={}", account.getUuid());
 

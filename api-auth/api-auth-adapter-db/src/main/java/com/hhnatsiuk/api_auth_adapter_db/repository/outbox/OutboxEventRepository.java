@@ -15,4 +15,7 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEventEntity, 
     Optional<OutboxEventEntity> findByEventId(String eventId);
 
     List<OutboxEventEntity> findTop100ByStatusInOrderByOccurredAtAsc(Collection<OutboxStatus> statuses);
+
+    List<OutboxEventEntity> findTop100ByStatusInAndPublishAttemptsLessThanOrderByOccurredAtAsc(
+            Collection<OutboxStatus> statuses, int maxAttempts);
 }

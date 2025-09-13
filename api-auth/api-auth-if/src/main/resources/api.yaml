@@ -202,7 +202,8 @@ components:
       required: [ message ]
 
     ## -------------------- OBJECTS FOR RABBIT --------------------
-    EmailVerifiedEventPayload:
+
+    UserCreatedEventPayload:
       type: object
       properties:
         accountUuid:

@@ -6,7 +6,7 @@ import com.hhnatsiuk.api_auth_core.outbox.OutboxAppender;
 import com.hhnatsiuk.api_auth_core.outbox.OutboxEventEntity;
 import com.hhnatsiuk.api_auth_core.outbox.OutboxSavedEvent;
 import com.hhnatsiuk.api_auth_core.outbox.OutboxStatus;
-import com.hhnatsiuk.api_auth_if.model.generated.EmailVerifiedEventPayloadDTO;
+import com.hhnatsiuk.api_auth_if.model.generated.UserCreatedEventPayloadDTO;
 import com.hhnatsiuk.api_auth_if.model.generated.UserDeletedEventPayloadDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +23,8 @@ public class OutboxAppenderJpa implements OutboxAppender {
     private static final Logger logger = LoggerFactory.getLogger(OutboxAppenderJpa.class);
 
     private static final String AGGREGATE_TYPE_AUTH_ACCOUNT = "auth_account";
-    private static final String USER_EMAIL_VERIFIED = "user.email_verified";
-    private static final String USER_DELETED = "user.deleted";
+    private static final String USER_CREATED = "user.user_created";
+    private static final String USER_DELETED = "user.user_deleted";
 
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
@@ -40,11 +40,11 @@ public class OutboxAppenderJpa implements OutboxAppender {
 
     @Transactional
     @Override
-    public void appendEmailVerified(String accountUuid, String email) {
+    public void appendUserCreated(String accountUuid, String email) {
         logger.debug("Preparing outbox event: {} for accountUuid={}, email={}",
-                USER_EMAIL_VERIFIED, accountUuid, email);
+                USER_CREATED, accountUuid, email);
 
-        var payloadObj = new EmailVerifiedEventPayloadDTO()
+        var payloadObj = new UserCreatedEventPayloadDTO()
                 .accountUuid(accountUuid)
                 .email(email);
 
@@ -61,14 +61,14 @@ public class OutboxAppenderJpa implements OutboxAppender {
                 .eventId(UUID.randomUUID().toString())
                 .aggregateType(AGGREGATE_TYPE_AUTH_ACCOUNT)
                 .aggregateId(accountUuid)
-                .eventType(USER_EMAIL_VERIFIED)
+                .eventType(USER_CREATED)
                 .payload(payloadJson)
                 .status(OutboxStatus.NEW)
                 .occurredAt(LocalDateTime.now())
                 .build();
 
         outboxEventRepository.save(event);
-        logger.info("Outbox event persisted: {} for accountUuid={}", USER_EMAIL_VERIFIED, accountUuid);
+        logger.info("Outbox event persisted: {} for accountUuid={}", USER_CREATED, accountUuid);
 
         appEventPublisher.publishEvent(new OutboxSavedEvent(event.getEventId()));
     }
