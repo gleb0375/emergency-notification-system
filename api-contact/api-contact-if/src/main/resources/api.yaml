@@ -2,6 +2,36 @@ openapi: 3.1.0
 info:
   title: Placeholder
   version: 0.0.1
-paths: {}
+
+components:
+  schemas:
+    UserCreatedEventPayload:
+      type: object
+      description: Payload for routing key 'user.user_created'.
+      additionalProperties: false
+      required: [accountUuid, email]
+      properties:
+        accountUuid:
+          type: string
+          description: UUID of the account in auth-service.
+          example: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+        email:
+          type: string
+          format: email
+          description: User email.
+          example: "user@example.com"
+
+    UserDeletedEventPayload:
+      type: object
+      description: Payload for routing key 'user.user_deleted'.
+      additionalProperties: false
+      required: [accountUuid]
+      properties:
+        accountUuid:
+          type: string
+          description: UUID of the account in auth-service.
+          example: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+
+
 
   

@@ -31,13 +31,13 @@ public class InboxMessageEntity {
     private LocalDateTime occurredAt;
 
     @Column(name = "received_at", insertable = false, updatable = false)
-    private LocalDateTime receivedAt; // DEFAULT CURRENT_TIMESTAMP (БД)
+    private LocalDateTime receivedAt;
 
     @Column(name = "payload_hash", length = 64)
-    private String payloadHash; // SHA-256 hex при желании
+    private String payloadHash;
 
     @Convert(converter = InboxStatusConverter.class)
-    @Column(name = "status", nullable = false, length = 9) // 'processed' = 9
+    @Column(name = "status", nullable = false, length = 9)
     private InboxStatus status;
 
     @Column(name = "error_message", columnDefinition = "TEXT")
