@@ -18,6 +18,9 @@ public class ContactGroupEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "contact_group_uuid", nullable = false, length = 36, unique = true)
+    private String contactGroupUuid;
+
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 

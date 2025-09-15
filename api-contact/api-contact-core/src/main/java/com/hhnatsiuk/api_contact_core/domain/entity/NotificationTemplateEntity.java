@@ -17,6 +17,9 @@ public class NotificationTemplateEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "notification_template_uuid", nullable = false, length = 36, unique = true)
+    private String notificationTemplateUuid;
+
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 

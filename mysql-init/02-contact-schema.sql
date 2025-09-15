@@ -2,28 +2,34 @@ USE contact_db;
 
 CREATE TABLE IF NOT EXISTS user_profiles (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  uuid CHAR(36) NOT NULL UNIQUE,                 -- own UUID profile (not a account_uuid)
-  account_uuid CHAR(36) NOT NULL UNIQUE,         -- soft-link to auth_db.auth_accounts.uuid
-  surname VARCHAR(100) NULL,  
-  name VARCHAR(50) NULL,  
-  email VARCHAR(255) NOT NULL UNIQUE,  
+  user_profile_uuid CHAR(36) NOT NULL UNIQUE,         
+  auth_account_uuid CHAR(36) NOT NULL UNIQUE,         
+  surname VARCHAR(100) NULL,
+  name VARCHAR(50) NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
   telegram_username VARCHAR(32) NULL UNIQUE,
   phone_number VARCHAR(20) NULL UNIQUE,
-  preferred_channel ENUM('email','sms','telegram') DEFAULT 'email',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  city VARCHAR(100) NULL,
+  country_code CHAR(2) NULL,
+  preferred_channel ENUM('email','sms','telegram') NOT NULL DEFAULT 'email',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  INDEX idx_up_account_uuid (account_uuid),
   INDEX idx_up_telegram (telegram_username),
-  INDEX idx_up_phone (phone_number)
-);
+  INDEX idx_up_phone (phone_number),
+  INDEX idx_up_city (city),
+  INDEX idx_up_country_code (country_code),
+  INDEX idx_up_country_city (country_code, city)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- ---------- CONTACT GROUPS ----------
 CREATE TABLE IF NOT EXISTS contact_groups (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  contact_group_uuid CHAR(36) NOT NULL UNIQUE, 
   name VARCHAR(100) NOT NULL,
   description VARCHAR(255),
-  created_by_account_uuid CHAR(36) NOT NULL,     -- soft-link
+  created_by_account_uuid CHAR(36) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX idx_cg_created_by_uuid (created_by_account_uuid)
@@ -32,6 +38,7 @@ CREATE TABLE IF NOT EXISTS contact_groups (
 -- ---------- NOTIFICATION TEMPLATES ----------
 CREATE TABLE IF NOT EXISTS notification_templates (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  notification_template_uuid CHAR(36) NOT NULL UNIQUE, 
   title VARCHAR(100) NOT NULL,
   body TEXT NOT NULL,
   channel ENUM('email', 'sms', 'telegram') NOT NULL,
@@ -41,7 +48,7 @@ CREATE TABLE IF NOT EXISTS notification_templates (
   INDEX idx_nt_created_by_uuid (created_by_account_uuid)
 );
 
--- ---------- GROUP MEMBERSHIPS (group ↔ user_profile) ----------
+------------ GROUP MEMBERSHIPS (group ↔ user_profile) ----------
 CREATE TABLE IF NOT EXISTS group_memberships (
   group_id INT UNSIGNED NOT NULL,
   profile_id BIGINT UNSIGNED NOT NULL,
