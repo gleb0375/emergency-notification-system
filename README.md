@@ -1,3 +1,4 @@
 # Emergency Notification System
 
-![project_diagram](https://raw.githubusercontent.com/gleb0375/emergency-notification-system/main/docs/screen_d.png)
+![project_diagram](https://github.com/gleb0375/emergency-notification-system/blob/main/docs/screen_d.png?raw=true)
+
