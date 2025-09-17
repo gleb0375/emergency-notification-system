@@ -79,53 +79,35 @@ components:
           example: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
 
     ## -------------------- PROFILE SCHEMAS ---------------------------
-
-    UserProfile:
+    UserProfileResponse:
       type: object
       additionalProperties: false
       required:
-        - userProfileUuid
-        - authAccountUuid
         - email
         - preferredChannel
         - createdAt
         - updatedAt
       properties:
-        userProfileUuid:
-          type: string
-          description: Public UUID of the profile
-          example: "5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f"
-        authAccountUuid:
-          type: string
-          description: UUID of the linked auth account
-          example: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
         surname:
           type: string
-          maxLength: 100
           example: "Doe"
         name:
           type: string
-          maxLength: 50
           example: "John"
         email:
           type: string
-          format: email
           example: "user@example.com"
         telegramUsername:
           type: string
-          maxLength: 32
           example: "john_doe"
         phoneNumber:
           type: string
-          maxLength: 20
           example: "+420123456789"
         city:
           type: string
-          maxLength: 100
           example: "Prague"
         countryCode:
           type: string
-          pattern: "^[A-Z]{2}$"
           description: ISO 3166-1 alpha-2
           example: "CZ"
         preferredChannel:
@@ -139,9 +121,11 @@ components:
           format: date-time
           example: "2025-09-16T12:45:10Z"
 
+
     UserProfileUpdateRequest:
       type: object
       additionalProperties: false
+      minProperties: 1
       description: Fields that can be updated by the profile owner
       properties:
         surname:
@@ -160,6 +144,150 @@ components:
           description: ISO 3166-1 alpha-2
         preferredChannel:
           $ref: '#/components/schemas/PreferredChannel'
+
+    UserProfileForAdminResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - userProfileUuid
+        - authAccountUuid
+        - email
+        - preferredChannel
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          example: 42
+          readOnly: true
+        userProfileUuid:
+          type: string
+          description: Public UUID of the profile
+          example: "5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f"
+          readOnly: true
+        authAccountUuid:
+          type: string
+          description: UUID of the linked auth account
+          example: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+          readOnly: true
+        surname:
+          type: string
+          example: "Doe"
+        name:
+          type: string
+          example: "John"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        telegramUsername:
+          type: string
+          example: "john_doe"
+        phoneNumber:
+          type: string
+          example: "+420123456789"
+        city:
+          type: string
+          example: "Prague"
+        countryCode:
+          type: string
+          pattern: "^[A-Z]{2}$"
+          description: ISO 3166-1 alpha-2
+          example: "CZ"
+        preferredChannel:
+          $ref: '#/components/schemas/PreferredChannel'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-09-16T12:34:56Z"
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-09-16T12:45:10Z"
+          readOnly: true
+
+    ## -------------------- GROUP SCHEMAS ---------------------------
+    GroupForMeResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - createdAt
+      properties:
+        name:
+          type: string
+          example: "On-call Team"
+        description:
+          type: string
+          example: "Primary incident responders"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-09-16T10:00:00Z"
+
+    GroupMemberForAdminResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - userProfileUuid
+        - authAccountUuid
+        - email
+        - preferredChannel
+        - joinedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 42
+        userProfileUuid:
+          type: string
+          example: "5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f"
+        authAccountUuid:
+          type: string
+          example: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+        surname:
+          type: string
+          example: "Doe"
+        name:
+          type: string
+          example: "John"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        telegramUsername:
+          type: string
+          example: "john_doe"
+        phoneNumber:
+          type: string
+          example: "+420123456789"
+        city:
+          type: string
+          example: "Prague"
+        countryCode:
+          type: string
+          description: ISO 3166-1 alpha-2
+          example: "CZ"
+        preferredChannel:
+          $ref: '#/components/schemas/PreferredChannel'
+        createdAt:
+          type: string
+          format: date-time
+          description: Profile creation timestamp
+          example: "2025-09-10T08:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Profile update timestamp
+          example: "2025-09-16T10:00:00Z"
+        joinedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the profile joined the group
+          example: "2025-09-16T10:05:00Z"
+
 
   examples:
     MissingFields:
@@ -218,12 +346,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProfile'
+                $ref: '#/components/schemas/UserProfileResponse'
               examples:
                 profile:
                   value:
-                    userProfileUuid: "5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f"
-                    authAccountUuid: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
                     surname: "Doe"
                     name: "John"
                     email: "user@example.com"
@@ -291,7 +417,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProfile'
+                $ref: '#/components/schemas/UserProfileResponse'
         '401':
           description: Unauthorized
           content:
@@ -320,9 +446,268 @@ paths:
                 internal:
                   $ref: '#/components/examples/InternalError'
 
+  /profiles/{profileUuid}:
+    parameters:
+      - name: profileUuid
+        in: path
+        required: true
+        description: Public UUID of the user profile
+        schema:
+          type: string
 
+    get:
+      tags: [ Profiles ]
+      summary: Get user profile by UUID (admin)
+      operationId: adminGetProfileByUuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileForAdminResponse'
+              examples:
+                profile:
+                  value:
+                    id: 42
+                    userProfileUuid: "5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f"
+                    authAccountUuid: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+                    surname: "Doe"
+                    name: "John"
+                    email: "user@example.com"
+                    telegramUsername: "john_doe"
+                    phoneNumber: "+420123456789"
+                    city: "Prague"
+                    countryCode: "CZ"
+                    preferredChannel: "email"
+                    createdAt: "2025-09-16T12:34:56Z"
+                    updatedAt: "2025-09-16T12:45:10Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
 
+    patch:
+      tags: [ Profiles ]
+      summary: Update user profile by UUID (admin)
+      operationId: adminUpdateProfileByUuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserProfileUpdateRequest' }
+            examples:
+              update:
+                value:
+                  surname: "Doe"
+                  name: "John"
+                  telegramUsername: "john_doe"
+                  phoneNumber: "+420123456789"
+                  city: "Plzeň"
+                  countryCode: "CZ"
+                  preferredChannel: "sms"
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/UserProfileUpdateRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileForAdminResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidationErrorResponse' }
+              examples:
+                validation: { $ref: '#/components/examples/ValidationFailed' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
 
+  /groups/me:
+    get:
+      tags: [ Groups ]
+      summary: Get groups where current user is a member
+      operationId: getMyGroups
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupForMeResponse'
+              examples:
+                groupsList:
+                  value:
+                    - name: "On-call Team"
+                      description: "Primary incident responders"
+                      createdAt: "2025-09-16T10:00:00Z"
+                    - name: "Security Alerts"
+                      description: "Security notifications"
+                      createdAt: "2025-09-10T08:30:00Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
+
+  /groups/{groupUuid}/members:
+    parameters:
+      - name: groupUuid
+        in: path
+        required: true
+        description: Public UUID of the group
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: Zero-based page index
+        schema:
+          type: integer
+          default: 0
+      - name: size
+        in: query
+        required: false
+        description: Page size
+        schema:
+          type: integer
+          default: 50
+
+    get:
+      tags: [ Groups ]
+      summary: Get members of a group (admin)
+      operationId: adminGetGroupMembers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupMemberForAdminResponse'
+              examples:
+                members:
+                  value:
+                    - id: 42
+                      userProfileUuid: "5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f"
+                      authAccountUuid: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+                      surname: "Doe"
+                      name: "John"
+                      email: "john@example.com"
+                      telegramUsername: "john_doe"
+                      phoneNumber: "+420123456789"
+                      city: "Prague"
+                      countryCode: "CZ"
+                      preferredChannel: "email"
+                      createdAt: "2025-09-10T08:30:00Z"
+                      updatedAt: "2025-09-16T10:00:00Z"
+                      joinedAt: "2025-09-16T10:05:00Z"
+                    - id: 77
+                      userProfileUuid: "7aa2f0e1-3b19-4e77-9b9a-0a1b2c3d4e5f"
+                      authAccountUuid: "9b8a7c6d-5e4f-3a2b-1c0d-9e8f7a6b5c4d"
+                      surname: "Smith"
+                      name: "Alice"
+                      email: "alice@example.com"
+                      telegramUsername: "alice_s"
+                      phoneNumber: "+420987654321"
+                      city: "Brno"
+                      countryCode: "CZ"
+                      preferredChannel: "telegram"
+                      createdAt: "2025-09-05T12:00:00Z"
+                      updatedAt: "2025-09-15T09:20:00Z"
+                      joinedAt: "2025-09-16T10:06:12Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
 
 
 
