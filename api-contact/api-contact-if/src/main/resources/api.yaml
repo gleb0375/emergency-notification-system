@@ -1157,8 +1157,7 @@ paths:
           schema: { type: string }
       responses:
         '204':
-          description:
-            Removed (idempotent: also returned if the profile was not a member)
+          description: Removed
         '401':
           description: Unauthorized
           content:
