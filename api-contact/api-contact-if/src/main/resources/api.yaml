@@ -288,6 +288,57 @@ components:
           description: Timestamp when the profile joined the group
           example: "2025-09-16T10:05:00Z"
 
+    GroupForAdminResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - contactGroupUuid
+        - name
+        - createdByAccountUuid
+        - createdAt
+      properties:
+        id:
+          type: integer
+          example: 12
+        contactGroupUuid:
+          type: string
+          example: "9d5f1c2b-7a30-4e1a-bc88-2f4a6b7c8d90"
+        name:
+          type: string
+          example: "On-call Team"
+        description:
+          type: string
+          example: "Primary incident responders"
+        createdByAccountUuid:
+          type: string
+          example: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-09-16T10:00:00Z"
+
+    GroupUpdateRequest:
+      type: object
+      additionalProperties: false
+      description: Fields that can be updated by an admin
+      minProperties: 1
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    GroupCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [ name ]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
 
   examples:
     MissingFields:
@@ -575,6 +626,79 @@ paths:
               examples:
                 internal: { $ref: '#/components/examples/InternalError' }
 
+  /groups:
+    post:
+      tags: [ Groups ]
+      summary: Create a group (admin)
+      operationId: adminCreateGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GroupCreateRequest' }
+            examples:
+              create:
+                value:
+                  name: "On-call Team"
+                  description: "Primary incident responders"
+      responses:
+        '201':
+          description: Group created
+          headers:
+            Location:
+              description: URL of the created group
+              schema:
+                type: string
+                example: /groups/9d5f1c2b-7a30-4e1a-bc88-2f4a6b7c8d90
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupForAdminResponse'
+              examples:
+                group:
+                  value:
+                    id: 12
+                    contactGroupUuid: "9d5f1c2b-7a30-4e1a-bc88-2f4a6b7c8d90"
+                    name: "On-call Team"
+                    description: "Primary incident responders"
+                    createdByAccountUuid: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+                    createdAt: "2025-09-16T10:00:00Z"
+        '400':
+          description: Missing fields
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                missing: { $ref: '#/components/examples/MissingFields' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                conflict: { $ref: '#/components/examples/GroupExists' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
+
   /groups/me:
     get:
       tags: [ Groups ]
@@ -708,6 +832,363 @@ paths:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
               examples:
                 internal: { $ref: '#/components/examples/InternalError' }
+
+  /groups/{groupUuid}:
+    parameters:
+      - name: groupUuid
+        in: path
+        required: true
+        description: Public UUID of the group
+        schema:
+          type: string
+
+    get:
+      tags: [ Groups ]
+      summary: Get group by UUID (admin)
+      operationId: adminGetGroupByUuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupForAdminResponse'
+              examples:
+                group:
+                  value:
+                    id: 12
+                    contactGroupUuid: "9d5f1c2b-7a30-4e1a-bc88-2f4a6b7c8d90"
+                    name: "On-call Team"
+                    description: "Primary incident responders"
+                    createdByAccountUuid: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+                    createdAt: "2025-09-16T10:00:00Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
+
+    patch:
+      tags: [ Groups ]
+      summary: Update group by UUID (admin)
+      operationId: adminUpdateGroupByUuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GroupUpdateRequest' }
+            examples:
+              updateName:
+                value:
+                  name: "On-call Team"
+              updateDescription:
+                value:
+                  description: "Primary incident responders"
+              updateBoth:
+                value:
+                  name: "On-call Team"
+                  description: "Primary incident responders"
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/GroupUpdateRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupForAdminResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '409':
+          description: Conflict (e.g., group with this name already exists)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                conflict: { $ref: '#/components/examples/GroupExists' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
+
+    delete:
+      tags: [ Groups ]
+      summary: Delete group by UUID (admin)
+      operationId: adminDeleteGroupByUuid
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
+
+  /groups/{groupUuid}/members/{profileUuid}:
+    parameters:
+      - name: groupUuid
+        in: path
+        required: true
+        description: Public UUID of the group
+        schema:
+          type: string
+      - name: profileUuid
+        in: path
+        required: true
+        description: Public UUID of the user profile
+        schema:
+          type: string
+
+    head:
+      tags: [ Groups ]
+      summary: Check if profile is a member of the group (admin)
+      operationId: adminCheckGroupMembership
+      responses:
+        '200':
+          description: Member exists
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Group or profile not found, or membership absent
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
+
+    put:
+      tags: [ Groups ]
+      summary: Add profile to the group (admin)
+      operationId: adminAddGroupMember
+      parameters:
+        - name: groupUuid
+          in: path
+          required: true
+          description: Public UUID of the group
+          schema: { type: string }
+        - name: profileUuid
+          in: path
+          required: true
+          description: Public UUID of the user profile
+          schema: { type: string }
+      responses:
+        '201':
+          description: Member created
+          headers:
+            Location:
+              description: URL of the membership resource
+              schema:
+                type: string
+                example: /groups/9d5f1c2b-7a30-4e1a-bc88-2f4a6b7c8d90/members/5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMemberForAdminResponse'
+              examples:
+                created:
+                  value:
+                    id: 42
+                    userProfileUuid: "5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f"
+                    authAccountUuid: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+                    surname: "Doe"
+                    name: "John"
+                    email: "john@example.com"
+                    telegramUsername: "john_doe"
+                    phoneNumber: "+420123456789"
+                    city: "Prague"
+                    countryCode: "CZ"
+                    preferredChannel: "email"
+                    createdAt: "2025-09-10T08:30:00Z"
+                    updatedAt: "2025-09-16T10:00:00Z"
+                    joinedAt: "2025-09-16T10:05:00Z"
+        '200':
+          description: Already a member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMemberForAdminResponse'
+              examples:
+                alreadyMember:
+                  value:
+                    id: 42
+                    userProfileUuid: "5f4d3c2b-1a09-4e8f-b7c6-1a2b3c4d5e6f"
+                    authAccountUuid: "2a1e9b6c-6c79-4d23-9f2a-1d0c7cc2d4f8"
+                    surname: "Doe"
+                    name: "John"
+                    email: "john@example.com"
+                    telegramUsername: "john_doe"
+                    phoneNumber: "+420123456789"
+                    city: "Prague"
+                    countryCode: "CZ"
+                    preferredChannel: "email"
+                    createdAt: "2025-09-10T08:30:00Z"
+                    updatedAt: "2025-09-16T10:00:00Z"
+                    joinedAt: "2025-08-01T09:00:00Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Group or profile not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
+
+    delete:
+      tags: [ Groups ]
+      summary: Remove profile from the group (admin)
+      operationId: adminRemoveGroupMember
+      parameters:
+        - name: groupUuid
+          in: path
+          required: true
+          description: Public UUID of the group
+          schema: { type: string }
+        - name: profileUuid
+          in: path
+          required: true
+          description: Public UUID of the user profile
+          schema: { type: string }
+      responses:
+        '204':
+          description:
+            Removed (idempotent: also returned if the profile was not a member)
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                unauthorized: { $ref: '#/components/examples/Unauthorized' }
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                forbidden: { $ref: '#/components/examples/Forbidden' }
+        '404':
+          description: Group or profile not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                notFound: { $ref: '#/components/examples/NotFound' }
+        '500':
+          description: Internal error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                internal: { $ref: '#/components/examples/InternalError' }
+
+
 
 
 
