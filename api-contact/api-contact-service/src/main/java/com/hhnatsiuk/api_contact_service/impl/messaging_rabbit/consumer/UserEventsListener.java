@@ -79,8 +79,8 @@ public class UserEventsListener {
         }
 
         var entity = UserProfileEntity.builder()
-                .uuid(UUID.randomUUID().toString())
-                .accountUuid(dto.getAccountUuid())
+                .userProfileUuid(UUID.randomUUID().toString())
+                .authAccountUuid(dto.getAccountUuid())
                 .email(dto.getEmail())
                 .preferredChannel("email")
                 .build();
