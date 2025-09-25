@@ -19,4 +19,13 @@ public class ValidationException extends RuntimeException {
         this.code = HttpStatus.UNPROCESSABLE_ENTITY.value();
         this.details = details;
     }
+
+    public ValidationException(String message) {
+        this(message, null);
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
 }

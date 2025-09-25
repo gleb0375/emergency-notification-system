@@ -12,6 +12,7 @@ public interface UserProfileRepository extends JpaRepository<UserProfileEntity, 
     Optional<UserProfileEntity> findByUuid(String uuid);
 
     Optional<UserProfileEntity> findByAccountUuid(String accountUuid);
+    Optional<UserProfileEntity> findByAuthAccountUuid(String authAccountUuid);
 
     Optional<UserProfileEntity> findByEmail(String email);
 

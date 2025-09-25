@@ -159,6 +159,7 @@ components:
       properties:
         id:
           type: integer
+          format: int64
           example: 42
           readOnly: true
         userProfileUuid:
