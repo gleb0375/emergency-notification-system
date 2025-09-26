@@ -70,12 +70,20 @@ public class GlobalExceptionHandler {
 
     // 400 - wrong param type
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponseDTO> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String param = ex.getName();
+    public ResponseEntity<ValidationErrorResponseDTO> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         String expected = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
-        ErrorResponseDTO dto = new ErrorResponseDTO()
+
+        ErrorDetailDTO detail = new ErrorDetailDTO()
+                .field(ex.getName())
+                .error("invalid value"
+                        + (ex.getValue() != null ? " '" + ex.getValue() + "'" : "")
+                        + "; expected type: " + expected);
+
+        ValidationErrorResponseDTO dto = new ValidationErrorResponseDTO()
                 .code(HttpStatus.BAD_REQUEST.value())
-                .message("Parameter '" + param + "' has invalid value; expected type: " + expected);
+                .message("Validation failed for one or more parameters")
+                .details(List.of(detail));
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dto);
     }
 

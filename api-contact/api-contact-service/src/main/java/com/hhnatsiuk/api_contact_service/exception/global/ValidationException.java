@@ -6,26 +6,17 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-public class ValidationException extends RuntimeException {
-    @Getter
-    private final int code;
-    private final String message;
-    @Getter
-    private final List<ErrorDetailDTO> details;
+public class ValidationException extends ApiException {
+
+    @Getter private final List<ErrorDetailDTO> details;
 
     public ValidationException(String message, List<ErrorDetailDTO> details) {
-        super(message);
-        this.message = message;
-        this.code = HttpStatus.UNPROCESSABLE_ENTITY.value();
+        super(HttpStatus.UNPROCESSABLE_ENTITY.value(), message);
         this.details = details;
     }
-
     public ValidationException(String message) {
         this(message, null);
     }
 
-    @Override
-    public String getMessage() {
-        return message;
-    }
 }
+
