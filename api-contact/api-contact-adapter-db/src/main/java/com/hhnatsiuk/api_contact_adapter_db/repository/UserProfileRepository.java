@@ -9,18 +9,16 @@ import java.util.Optional;
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfileEntity, Long> {
 
-    Optional<UserProfileEntity> findByUuid(String uuid);
 
-    Optional<UserProfileEntity> findByAccountUuid(String accountUuid);
     Optional<UserProfileEntity> findByAuthAccountUuid(String authAccountUuid);
 
+    Optional<UserProfileEntity> findByUserProfileUuid(String userProfileUuid);
     Optional<UserProfileEntity> findByEmail(String email);
 
     Optional<UserProfileEntity> findByTelegramUsername(String telegramUsername);
 
     Optional<UserProfileEntity> findByPhoneNumber(String phoneNumber);
-
-    boolean existsByAccountUuid(String accountUuid);
+    boolean existsByAuthAccountUuid(String authAccountUuid);
 
     boolean existsByEmail(String email);
 }

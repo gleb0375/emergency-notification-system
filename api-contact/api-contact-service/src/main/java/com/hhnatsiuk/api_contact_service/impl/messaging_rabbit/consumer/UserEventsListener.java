@@ -73,7 +73,7 @@ public class UserEventsListener {
         if (isBlank(dto.getAccountUuid())) throw new IllegalArgumentException("accountUuid is required");
         if (isBlank(dto.getEmail()))        throw new IllegalArgumentException("email is required");
 
-        if (userProfiles.existsByAccountUuid(dto.getAccountUuid())) {
+        if (userProfiles.existsByAuthAccountUuid(dto.getAccountUuid())) {
             logger.debug("Profile already exists for accountUuid={}, skip", dto.getAccountUuid());
             return;
         }
@@ -93,7 +93,7 @@ public class UserEventsListener {
         UserDeletedEventPayloadDTO dto = read(json, UserDeletedEventPayloadDTO.class);
         if (isBlank(dto.getAccountUuid())) throw new IllegalArgumentException("accountUuid is required");
 
-        userProfiles.findByAccountUuid(dto.getAccountUuid())
+        userProfiles.findByAuthAccountUuid(dto.getAccountUuid())
                 .ifPresentOrElse(
                         e -> { userProfiles.delete(e); logger.info("Deleted user_profile for accountUuid={}", dto.getAccountUuid()); },
                         () -> logger.debug("No profile for accountUuid={}, nothing to delete", dto.getAccountUuid())
