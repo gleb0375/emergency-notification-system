@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ens_user
+      RABBITMQ_DEFAULT_PASS: ens_pass
+      RABBITMQ_DEFAULT_VHOST: /ens
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # Web UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+    networks:
+      - my_network
+
+  api-gateway:
+    build: ./api-gateway
+    image: myorg/api-gateway:latest
+    container_name: api-gateway
+    environment:
+      - GATEWAY_PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - my_network
+
+  api-auth-service:
+    build:
+      context: ./api-auth/api-auth-service
+      dockerfile: Dockerfile
+    image: myorg/api-auth-service:latest
+    container_name: api-auth-service
+    env_file:
+      - .env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/auth_db?allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=${ENS_DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${ENS_DB_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+      # --- RabbitMQ ---
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=ens_user
+      - SPRING_RABBITMQ_PASSWORD=ens_pass
+      - SPRING_RABBITMQ_VIRTUAL_HOST=/ens
+      - SPRING_RABBITMQ_PUBLISHER_CONFIRM_TYPE=correlated
+      - SPRING_RABBITMQ_TEMPLATE_MANDATORY=true
+   # ports:
+   #  - "8082:8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - my_network
+
+  api-contact-service:
+    build:
+      context: ./api-contact/api-contact-service
+      dockerfile: Dockerfile
+    image: myorg/api-contact-service:latest
+    container_name: api-contact-service
+    env_file:
+      - .env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/contact_db?allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=${ENS_DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${ENS_DB_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+      # --- RabbitMQ ---
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=ens_user
+      - SPRING_RABBITMQ_PASSWORD=ens_pass
+      - SPRING_RABBITMQ_VIRTUAL_HOST=/ens      
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - my_network
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: ${ENS_DB_USERNAME}
+      MYSQL_PASSWORD: ${ENS_DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
+
+volumes:
+  db_data:
