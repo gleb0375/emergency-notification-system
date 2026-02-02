@@ -13,7 +13,7 @@ import com.hhnatsiuk.api_auth_service.exception.verification.EmailSendingExcepti
 import com.hhnatsiuk.api_auth_service.exception.user.UserNotFoundException;
 import com.hhnatsiuk.api_auth_service.exception.verification.VerificationNotFoundException;
 import com.hhnatsiuk.api_auth_service.util.OtpGenerator;
-import com.hhnatsiuk.auth.api.integration.AmazonSesClient;
+import com.hhnatsiuk.auth.api.integration.EmailSender;
 import com.hhnatsiuk.auth.api.service.EmailVerificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,17 +34,17 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
     private final EmailVerificationRepository emailVerificationRepository;
     private final AuthAccountRepository authAccountRepository;
-    private final AmazonSesClient amazonSesClient;
+    private final EmailSender emailSender;
     private final OutboxAppender outboxAppender;
 
     public EmailVerificationServiceImpl(EmailVerificationRepository emailVerificationRepository,
                                         AuthAccountRepository authAccountRepository,
-                                        AmazonSesClient amazonSesClient,
-                                        OutboxAppender outboxAppender) {
+                                        OutboxAppender outboxAppender,
+                                        EmailSender emailSender) {
         this.emailVerificationRepository = emailVerificationRepository;
         this.authAccountRepository = authAccountRepository;
-        this.amazonSesClient = amazonSesClient;
         this.outboxAppender = outboxAppender;
+        this.emailSender = emailSender;
     }
 
     @Override
@@ -68,9 +68,8 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         logger.debug("Saved EmailVerification [uuid={}, token={}]", emailVerificationEntity.getUuid(), token);
 
         int ttlMinutes = (int) Math.ceil(verificationTtlSeconds / 60.0);
-
         try {
-            amazonSesClient.sendVerification(
+            emailSender.sendVerification(
                     sendVerificationRequestDTO.getEmail(),
                     token,
                     ttlMinutes

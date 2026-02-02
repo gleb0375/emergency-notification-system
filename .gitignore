@@ -33,3 +33,5 @@ api-contact/api-contact-core/target
 api-contact/api-contact-if/target
 api-contact/api-contact-service/log
 api-contact/api-contact-service/target
+api-gateway/.idea
+api-gateway/target

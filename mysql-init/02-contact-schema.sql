@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS notification_templates (
   INDEX idx_nt_created_by_uuid (created_by_account_uuid)
 );
 
------------- GROUP MEMBERSHIPS (group ↔ user_profile) ----------
+-- ---------- GROUP MEMBERSHIPS (group ↔ user_profile) ----------
 CREATE TABLE IF NOT EXISTS group_memberships (
   group_id INT UNSIGNED NOT NULL,
   profile_id BIGINT UNSIGNED NOT NULL,
