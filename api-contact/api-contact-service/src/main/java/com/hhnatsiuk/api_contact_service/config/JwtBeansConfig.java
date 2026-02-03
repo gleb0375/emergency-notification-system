@@ -1,5 +1,8 @@
 package com.hhnatsiuk.api_contact_service.config;
 
+import com.hhnatsiuk.api_contact_service.impl.service.ProfileServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,6 +20,8 @@ import java.util.stream.Collectors;
 
 @Configuration
 public class JwtBeansConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtBeansConfig.class);
 
     @Bean
     public JwtDecoder jwtDecoder(TokenSecurityProperties props) {
@@ -43,8 +48,21 @@ public class JwtBeansConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter conv = new JwtAuthenticationConverter();
         conv.setJwtGrantedAuthoritiesConverter(jwt -> {
+
+            logger.debug(
+                    "JWT authenticated: iss={}, aud={}, sub={}, uid={}, roles={}, exp={}",
+                    jwt.getIssuer(),
+                    jwt.getAudience(),
+                    jwt.getSubject(),
+                    jwt.getClaimAsString("uid"),
+                    jwt.getClaimAsStringList("roles"),
+                    jwt.getExpiresAt()
+            );
+
             List<String> roles = jwt.getClaimAsStringList("roles");
+
             if (roles == null) return List.of();
+
             return roles.stream()
                     .filter(r -> r != null && !r.isBlank())
                     .map(r -> "ROLE_" + r.trim().toUpperCase())

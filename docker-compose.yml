@@ -83,8 +83,8 @@ services:
       - SPRING_RABBITMQ_USERNAME=ens_user
       - SPRING_RABBITMQ_PASSWORD=ens_pass
       - SPRING_RABBITMQ_VIRTUAL_HOST=/ens      
-    ports:
-      - "8081:8081"
+    #ports:
+    #  - "8081:8081"
     depends_on:
       mysql:
         condition: service_healthy
