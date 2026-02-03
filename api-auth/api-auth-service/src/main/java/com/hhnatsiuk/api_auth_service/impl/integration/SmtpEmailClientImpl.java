@@ -34,21 +34,9 @@ public class SmtpEmailClientImpl implements EmailSender {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
 
-            log.error("FROM raw='{}'", from);
-            log.error("FROM length={}", from == null ? -1 : from.length());
-
-            if (from != null) {
-                for (int i = 0; i < from.length(); i++) {
-                    log.error("FROM char[{}]=U+{}", i, Integer.toHexString(from.charAt(i)));
-                }
-            }
-
-            log.error("TO raw='{}'", to);
-            log.error("TO length={}", to == null ? -1 : to.length());
-
             helper.setFrom(from);
             helper.setTo(to);
-            helper.setSubject("Your verification code");
+            helper.setSubject("Emergency notification system");
             helper.setText(
                     "Hello,\n\nYour verification code is: "
                             + token + "\nIt expires in " + ttlMin + " minutes.",

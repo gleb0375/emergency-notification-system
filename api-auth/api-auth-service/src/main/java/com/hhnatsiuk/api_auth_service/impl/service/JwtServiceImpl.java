@@ -60,16 +60,31 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private String buildAccessToken(AuthAccountEntity userDetails, String sessionUuid) {
-        logger.info("Generating access token for user: {}", userDetails.getEmail());
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + cryptoUtilService.getAccessTokenExpirationInMs());
 
+        String jti = UUID.randomUUID().toString();
+
+        logger.info(
+                "Issuing access token: iss={}, aud={}, sub={}, uid={}, roles={}, iat={}, exp={}, jti={}",
+                issuer,
+                audience,
+                userDetails.getEmail(),
+                userDetails.getUuid(),
+                userDetails.getRoles().stream()
+                        .map(r -> r.getName().toUpperCase())
+                        .toList(),
+                now,
+                expiryDate,
+                jti
+        );
+
         var builder = Jwts.builder()
-                .setIssuer(issuer)                        // iss
-                .setAudience(audience)                    // aud
-                .setId(UUID.randomUUID().toString())      // jti
-                .setSubject(userDetails.getEmail())       // sub
-                .claim("uid", userDetails.getUuid())      // uuid
+                .setIssuer(issuer)
+                .setAudience(audience)
+                .setId(jti)
+                .setSubject(userDetails.getEmail())
+                .claim("uid", userDetails.getUuid())
                 .claim("roles", userDetails.getRoles().stream()
                         .map(r -> r.getName().toUpperCase())
                         .toList())
@@ -78,11 +93,13 @@ public class JwtServiceImpl implements JwtService {
                 .signWith(cryptoUtilService.getAccessTokenSecretKey());
 
         if (sessionUuid != null) {
-            builder.claim("sid", sessionUuid);           //  id session
+            builder.claim("sid", sessionUuid);
+            logger.debug("Access token bound to session sid={}", sessionUuid);
         }
 
         return builder.compact();
     }
+
 
 
     @Override
